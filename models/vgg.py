@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from utils import load_state_dict_from_url
+from models.utils import load_state_dict_from_url
 from typing import Union, List, Dict, Any, cast
 
 
