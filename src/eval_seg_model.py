@@ -3,14 +3,34 @@ import torch.nn as nn
 import torch.utils.data as d
 import torch.optim as o
 import models.vgg as mv
-import src.sun_rgbd_dataloader as ss
+import src.sun_rgbd_dataset as ss
 import numpy as np
+from typing import Tuple
+import torchvision.models.vgg as vgg
+import torchvision.models._utils as su
+import torchvision.models.segmentation.deeplabv3 as dl
 
 
 def get_device():
     device = 'cuda' if t.cuda.is_available() else 'cpu'
     print(f'using {device}')
     return t.device(device)
+
+
+def init_model(num_of_classes: int, device):
+    # copied init process from
+    # https://pytorch.org/vision/0.8/_modules/torchvision/models/segmentation/segmentation.html
+    backbone = mv.vgg16(pretrained=False)
+    in_features = backbone.classifier[6].in_features
+    backbone.classifier[6] = nn.Linear(in_features, in_features)
+    return_layers = {'features': 'out'}
+    backbone = su.IntermediateLayerGetter(backbone, return_layers=return_layers)
+    classifier = dl.DeepLabHead(in_channels=512, num_classes=num_of_classes)
+    seg_model = dl.DeepLabV3(backbone=backbone, classifier=classifier)
+
+    print(seg_model)
+    seg_model.to(device)
+    return seg_model
 
 
 def _fast_hist(label_true, label_pred, n_class):
@@ -45,7 +65,6 @@ def eval_output(label_trues, label_preds, n_class, return_iu=False):
 
 def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device,
                    epochs: int, optimizer: o.Optimizer, loss_func: nn.Module):
-    model.to(device)
     for epoch in range(epochs):
         for i, (channels, seg_mask) in enumerate(train_data):
             channels, seg_mask = channels.to(device), seg_mask.to(device)
@@ -53,36 +72,43 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
             optimizer.zero_grad()
 
             # forward prop + backward prop + optimizer
-            outputs = model(channels)
+            outputs = model(channels)['out']
+            #outputs = t.argmax(outputs, dim=1)
             loss = loss_func(outputs, seg_mask)
             loss.backward()
             optimizer.step()
 
     true_masks, pred_masks = [], []
     with t.no_grad():
+        model.eval()
         for i, (channels, seg_mask) in enumerate(test_data):
             pred_seg_mask = model(channels)
+            pred_seg_mask = t.argmax(pred_seg_mask, dim=1)
             true_masks.append(seg_mask)
             pred_masks.append(pred_seg_mask)
     eval_output(true_masks, pred_masks, 37)
 
 
 if __name__ == '__main__':
-    batch_size = 1
+    batch_size = 16
+
     worker_count = 4
     shuffle = True
-    train_data = d.DataLoader(dataset=ss.SUNRGBDTrainDataset(True, True, False),
+    train_dataset = ss.SUNRGBDTrainDataset(True, True, False)
+    train_data = d.DataLoader(dataset=train_dataset,
                               shuffle=shuffle,
                               num_workers=worker_count,
-                              batch_size=1)
+                              batch_size=batch_size,
+                              drop_last=True)
     test_data = d.DataLoader(dataset=ss.SUNRGBDTestDataset(True, True, False),
                              num_workers=worker_count)
     loss_func = nn.CrossEntropyLoss()
-    model = mv.vgg16()
+    device = get_device()
+    model = init_model(num_of_classes=train_dataset.CLASS_COUNT, device=device)
     train_and_eval(model=model,
                    epochs=1,
                    optimizer=o.SGD(model.parameters(), lr=.001, momentum=.9),
                    loss_func=loss_func,
                    train_data=train_data,
                    test_data=test_data,
-                   device=get_device())
+                   device=device)

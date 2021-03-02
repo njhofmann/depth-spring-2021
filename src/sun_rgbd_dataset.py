@@ -38,15 +38,14 @@ def compute_training_stats():
 
 
 class GenericSUNRGBDDataset(tud.Dataset):
+    CLASS_COUNT = 37
 
-    def __init__(self, dirc: pl.Path, semantic_or_box: bool, rgb: bool, depth: bool, train_or_test: bool):
+    def __init__(self, dirc: pl.Path, semantic_or_box: bool, rgb: bool, depth: bool):
         self.dircs = list(dirc.glob('*'))
         self.dircs.sort()
 
         # load semantic segmentation masks or 2D bounding boxes
         self.semantic_or_box = semantic_or_box
-
-        self.train_or_test = train_or_test
 
         if not (rgb or depth):
             raise ValueError('need to load at one type of image data')
@@ -84,7 +83,8 @@ class GenericSUNRGBDDataset(tud.Dataset):
             depth_img = ((depth_img / MAX_DEPTH) - CHANNEL_MEANS[-1]) / CHANNEL_STDS[-1]
 
         if self.semantic_or_box:
-            label = tvt.ToTensor()(pi.open(sample_dirc.joinpath('semantic_segs.png')))[0] * 255
+            label = t.as_tensor(tvt.ToTensor()(pi.open(sample_dirc.joinpath('semantic_segs.png')))[0] * 255,
+                                dtype=t.long)
         else:
             label = np.load(sample_dirc.joinpath('bounding_box.npy'))
 
@@ -106,11 +106,20 @@ class GenericSUNRGBDDataset(tud.Dataset):
     def __len__(self):
         return len(self.dircs)
 
+    @property
+    def channel_count(self) -> int:
+        cnt = 0
+        if self.include_rgb:
+            cnt += 3
+        if self.include_depth:
+            cnt += 1
+        return cnt
+
 
 class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 
     def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True):
-        super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth, True)
+        super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth)
         self.transforms = tvt.Compose([self.resizer,
                                        self.tensorer])
         self.cropper = tvt.RandomCrop(INPUT_SIZE)
@@ -135,7 +144,7 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 class SUNRGBDTestDataset(GenericSUNRGBDDataset):
 
     def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True):
-        super().__init__(p.SUN_RGBD_TEST_DIRC, semantic_or_box, rgb, depth, False)
+        super().__init__(p.SUN_RGBD_TEST_DIRC, semantic_or_box, rgb, depth)
         self.cropper = tvt.CenterCrop(INPUT_SIZE)
 
     def _apply_augments(self, rgb, depth, label):
