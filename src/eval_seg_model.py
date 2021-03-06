@@ -5,7 +5,7 @@ import torch.optim as o
 import models.vgg as mv
 import src.sun_rgbd_dataset as ss
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Optional
 import torchvision.models.vgg as vgg
 import torchvision.models._utils as su
 import torchvision.models.segmentation.deeplabv3 as dl
@@ -27,9 +27,8 @@ def init_model(num_of_classes: int, device):
     backbone = su.IntermediateLayerGetter(backbone, return_layers=return_layers)
     classifier = dl.DeepLabHead(in_channels=512, num_classes=num_of_classes)
     seg_model = dl.DeepLabV3(backbone=backbone, classifier=classifier)
-
     print(seg_model)
-    seg_model.to(device)
+    seg_model = seg_model.to(device)
     return seg_model
 
 
@@ -41,16 +40,23 @@ def _fast_hist(label_true, label_pred, n_class):
     return hist
 
 
-def eval_output(label_trues, label_preds, n_class, return_iu=False):
+def build_hist(true_label, pred_label, hist: Optional[np.ndarray] = None, n_class: Optional[int] = None):
+    if hist is None:
+        hist = np.zeros((n_class, n_class))
+    return hist + _fast_hist(true_label.flatten(), pred_label.flatten(), n_class)
+
+
+def eval_results(hist, return_iu: bool = False):
     """Evaluates the given list of predicted semantic segmentation masks with the following metrics
       - overall accuracy
       - mean accuracy
       - mean IU
       - fwavacc
     """
-    hist = np.zeros((n_class, n_class))
-    for lt, lp in zip(label_trues, label_preds):
-        hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
+    # label_trues, label_preds, n_class, return_iu=False
+    # hist = np.zeros((n_class, n_class))
+    # for lt, lp in zip(label_trues, label_preds):
+    #     hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
     acc = np.diag(hist).sum() / hist.sum()
     acc_cls = np.diag(hist) / hist.sum(axis=1)
     acc_cls = np.nanmean(acc_cls)
@@ -64,37 +70,38 @@ def eval_output(label_trues, label_preds, n_class, return_iu=False):
 
 
 def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device,
-                   epochs: int, optimizer: o.Optimizer, loss_func: nn.Module):
+                   epochs: int, optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int):
     for epoch in range(epochs):
+        print(f'epoch {epoch}')
         for i, (channels, seg_mask) in enumerate(train_data):
+            print(i)
             channels, seg_mask = channels.to(device), seg_mask.to(device)
             # zero the parameter gradients
             optimizer.zero_grad()
 
             # forward prop + backward prop + optimizer
-            outputs = model(channels)['out']
-            #outputs = t.argmax(outputs, dim=1)
+            outputs = t.softmax(model(channels)['out'], dim=1)
             loss = loss_func(outputs, seg_mask)
             loss.backward()
             optimizer.step()
 
-    true_masks, pred_masks = [], []
     with t.no_grad():
         model.eval()
+        results_hist = None
         for i, (channels, seg_mask) in enumerate(test_data):
-            pred_seg_mask = model(channels)
-            pred_seg_mask = t.argmax(pred_seg_mask, dim=1)
-            true_masks.append(seg_mask)
-            pred_masks.append(pred_seg_mask)
-    eval_output(true_masks, pred_masks, 37)
+            channels, seg_mask = channels.to(device), seg_mask.to(device)
+            pred_seg_mask = t.argmax(t.softmax(model(channels)['out'], dim=1), dim=1)
+            results_hist = build_hist(seg_mask.cpu().numpy()[0], pred_seg_mask.cpu().numpy()[0], results_hist, num_of_classes)
+    print(eval_results(results_hist))
 
 
 if __name__ == '__main__':
     batch_size = 16
-
+    epochs = 0
     worker_count = 4
     shuffle = True
     train_dataset = ss.SUNRGBDTrainDataset(True, True, False)
+    num_of_classes = train_dataset.CLASS_COUNT
     train_data = d.DataLoader(dataset=train_dataset,
                               shuffle=shuffle,
                               num_workers=worker_count,
@@ -106,9 +113,10 @@ if __name__ == '__main__':
     device = get_device()
     model = init_model(num_of_classes=train_dataset.CLASS_COUNT, device=device)
     train_and_eval(model=model,
-                   epochs=1,
+                   epochs=epochs,
                    optimizer=o.SGD(model.parameters(), lr=.001, momentum=.9),
                    loss_func=loss_func,
                    train_data=train_data,
                    test_data=test_data,
-                   device=device)
+                   device=device,
+                   num_of_classes=num_of_classes)

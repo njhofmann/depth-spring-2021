@@ -3,6 +3,7 @@ import paths as p
 import torch as t
 import numpy as np
 import pathlib as pl
+from typing import Set
 import torchvision.transforms as tvt
 import torchvision.transforms.functional as tvf
 import PIL.Image as pi
@@ -13,6 +14,16 @@ INPUT_SIZE = 425
 MAX_DEPTH = 65400  # from training data
 CHANNEL_MEANS = t.tensor([0.4902, 0.4525, 0.4251, 0.2519])
 CHANNEL_STDS = t.tensor([0.2512, 0.2564, 0.2581, 0.1227])
+
+
+def get_unique_semantic_labels() -> Set[int]:
+    """Utility function to check the integers making up semantic images"""
+    idxs = set()
+    data = SUNRGBDTrainDataset(True)
+    for i in range(len(data)):
+        print(i)
+        idxs.update([x.item() for x in t.unique(data[i][1])])
+    return idxs
 
 
 def get_max_depth_val():
@@ -38,7 +49,7 @@ def compute_training_stats():
 
 
 class GenericSUNRGBDDataset(tud.Dataset):
-    CLASS_COUNT = 37
+    CLASS_COUNT = 38
 
     def __init__(self, dirc: pl.Path, semantic_or_box: bool, rgb: bool, depth: bool):
         self.dircs = list(dirc.glob('*'))
@@ -56,15 +67,20 @@ class GenericSUNRGBDDataset(tud.Dataset):
         # to load only depth info only
         self.include_depth = depth
 
-        self.resizer = tvt.Resize(INPUT_SIZE)
         self.tensorer = tvt.ToTensor()
-
-        self.depth_transforms = tvt.Compose([tvt.Resize(INPUT_SIZE),
-                                             tvt.ToTensor()])
+        self.rgb_and_depth_normal = tvt.Normalize(CHANNEL_MEANS, CHANNEL_STDS)
+        self.rgb_normal = tvt.Normalize(CHANNEL_MEANS[:3], CHANNEL_STDS[:3])
+        self.depth_normal = tvt.Normalize(CHANNEL_MEANS[-1], CHANNEL_STDS[-1])
 
     @abc.abstractmethod
-    def _apply_augments(self, rgb, depth, label):
-        pass
+    def _apply_augments(self, img, label):
+        normalize = self.depth_normal
+        if self.include_rgb and self.include_depth:
+            normalize = self.rgb_and_depth_normal
+        elif self.include_rgb:
+            normalize = self.rgb_normal
+        img = normalize(img)
+        return img, label
 
     def __getitem__(self, idx):
         # TODO figure out proper formatting for this
@@ -74,21 +90,9 @@ class GenericSUNRGBDDataset(tud.Dataset):
 
         if self.include_rgb:
             rgb_img = self.tensorer(pi.open(sample_dirc.joinpath('rgb.png')))
-            for i in range(3):
-                rgb_img[i] = (rgb_img[i] - CHANNEL_MEANS[i]) / CHANNEL_STDS[i]
 
         if self.include_depth:
-            depth_img = self.tensorer(pi.open(sample_dirc.joinpath('depth.png')))
-            depth_img = depth_img.to(t.float)
-            depth_img = ((depth_img / MAX_DEPTH) - CHANNEL_MEANS[-1]) / CHANNEL_STDS[-1]
-
-        if self.semantic_or_box:
-            label = t.as_tensor(tvt.ToTensor()(pi.open(sample_dirc.joinpath('semantic_segs.png')))[0] * 255,
-                                dtype=t.long)
-        else:
-            label = np.load(sample_dirc.joinpath('bounding_box.npy'))
-
-        rgb_img, depth_img, label = self._apply_augments(rgb_img, depth_img, label)
+            depth_img = self.tensorer(pi.open(sample_dirc.joinpath('depth.png'))).to(t.float) / MAX_DEPTH
 
         if self.include_rgb and self.include_depth:
             img = t.cat((rgb_img, depth_img), 0)
@@ -97,11 +101,17 @@ class GenericSUNRGBDDataset(tud.Dataset):
         else:
             img = depth_img
 
+        if self.semantic_or_box:
+            label = t.as_tensor(self.tensorer(pi.open(sample_dirc.joinpath('semantic_segs.png')))[0] * 255,
+                                dtype=t.long)
+        else:
+            label = np.load(sample_dirc.joinpath('bounding_box.npy'))
+
         # sanity check
         if (a := img.shape[-2:]) != (b := label.shape[-2:]):
             raise ValueError(f'image and semantic mask have different sizes: {a} vs {b}')
 
-        return img, label
+        return self._apply_augments(img, label)
 
     def __len__(self):
         return len(self.dircs)
@@ -120,25 +130,22 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 
     def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True):
         super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth)
-        self.transforms = tvt.Compose([self.resizer,
-                                       self.tensorer])
         self.cropper = tvt.RandomCrop(INPUT_SIZE)
         self.jitter = tvt.ColorJitter()
 
-    def _apply_augments(self, rgb, depth, label):
+    def _apply_augments(self, img, label):
         # TODO for bounding box
-        cropper_params = self.cropper.get_params(rgb if self.include_rgb else depth, (INPUT_SIZE, INPUT_SIZE))
-        if rgb is not None:
-            rgb = tvf.crop(rgb, *cropper_params)
-            rgb = self.jitter(rgb)
+        img, label = super()._apply_augments(img, label)
+        cropper_params = self.cropper.get_params(img, (INPUT_SIZE, INPUT_SIZE))
+        img = tvf.crop(img, *cropper_params)
 
-        if depth is not None:
-            depth = tvf.crop(depth, *cropper_params)
-
-        if label is not None:
+        if self.semantic_or_box:
             label = tvf.crop(label, *cropper_params)
 
-        return rgb, depth, label
+        if self.include_rgb:
+            img[:3] = self.jitter(img[:3])
+
+        return img, label
 
 
 class SUNRGBDTestDataset(GenericSUNRGBDDataset):
@@ -147,24 +154,18 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         super().__init__(p.SUN_RGBD_TEST_DIRC, semantic_or_box, rgb, depth)
         self.cropper = tvt.CenterCrop(INPUT_SIZE)
 
-    def _apply_augments(self, rgb, depth, label):
+    def _apply_augments(self, img, label):
         # TODO for bounding box
-        cropper_params = self.cropper.get_params(rgb if self.include_rgb else depth, (INPUT_SIZE, INPUT_SIZE))
+        img, label = super()._apply_augments(img, label)
+        img = self.cropper(img)
+        if self.semantic_or_box:
+            label = self.cropper(label)
 
-        if rgb is not None:
-            rgb = tvf.crop(rgb, *cropper_params)
-
-        if depth is not None:
-            depth = tvf.crop(depth, *cropper_params)
-
-        if label is not None:
-            label = tvf.crop(label, *cropper_params)
-
-        return rgb, depth, label
+        return img, label
 
 
 if __name__ == '__main__':
     data = SUNRGBDTrainDataset(True)
     for i in range(len(data)):
         a, b = data[i]
-        print(data[i])
+        print(a, b.shape)
