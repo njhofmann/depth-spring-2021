@@ -3,7 +3,7 @@ import paths as p
 import torch as t
 import numpy as np
 import pathlib as pl
-from typing import Set
+from typing import Set, Tuple
 import torchvision.transforms as tvt
 import torchvision.transforms.functional as tvf
 import PIL.Image as pi
@@ -162,6 +162,12 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
             label = self.cropper(label)
 
         return img, label
+
+
+def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_depth: bool) \
+        -> Tuple[SUNRGBDTrainDataset, SUNRGBDTestDataset]:
+    return SUNRGBDTrainDataset(semantic_or_box, include_rgb, include_depth), \
+           SUNRGBDTestDataset(semantic_or_box, include_rgb, include_depth)
 
 
 if __name__ == '__main__':

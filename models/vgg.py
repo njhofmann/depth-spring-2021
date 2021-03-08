@@ -66,9 +66,9 @@ class VGG(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False) -> nn.Sequential:
+def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channels: int = 3) -> nn.Sequential:
     layers: List[nn.Module] = []
-    in_channels = 3
+    # in_channels = 1
     for v in cfg:
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
@@ -91,10 +91,10 @@ cfgs: Dict[str, List[Union[str, int]]] = {
 }
 
 
-def _vgg(arch: str, cfg: str, batch_norm: bool, pretrained: bool, progress: bool, **kwargs: Any) -> VGG:
+def _vgg(arch: str, cfg: str, batch_norm: bool, pretrained: bool, progress: bool, in_channels=3, **kwargs: Any) -> VGG:
     if pretrained:
         kwargs['init_weights'] = False
-    model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm), **kwargs)
+    model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm, in_channels=in_channels), **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch],
                                               progress=progress)
@@ -146,7 +146,7 @@ def vgg13_bn(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
     return _vgg('vgg13_bn', 'B', True, pretrained, progress, **kwargs)
 
 
-def vgg16(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> VGG:
+def vgg16(pretrained: bool = False, progress: bool = True, in_channels: int = 3, **kwargs: Any) -> VGG:
     r"""VGG 16-layer model (configuration "D")
     `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`._
 
@@ -154,7 +154,7 @@ def vgg16(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> VGG
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _vgg('vgg16', 'D', False, pretrained, progress, **kwargs)
+    return _vgg('vgg16', 'D', False, pretrained, progress, in_channels, **kwargs)
 
 
 def vgg16_bn(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> VGG:
