@@ -163,14 +163,15 @@ class DenseNet(nn.Module):
         bn_size: int = 4,
         drop_rate: float = 0,
         num_classes: int = 1000,
-        memory_efficient: bool = False
+        memory_efficient: bool = False,
+        input_channels: int = 3
     ) -> None:
 
         super(DenseNet, self).__init__()
 
         # First convolution
         self.features = nn.Sequential(OrderedDict([
-            ('conv0', nn.Conv2d(3, num_init_features, kernel_size=7, stride=2,
+            ('conv0', nn.Conv2d(input_channels, num_init_features, kernel_size=7, stride=2,
                                 padding=3, bias=False)),
             ('norm0', nn.BatchNorm2d(num_init_features)),
             ('relu0', nn.ReLU(inplace=True)),
@@ -246,9 +247,10 @@ def _densenet(
     num_init_features: int,
     pretrained: bool,
     progress: bool,
+    input_channels: int,
     **kwargs: Any
 ) -> DenseNet:
-    model = DenseNet(growth_rate, block_config, num_init_features, **kwargs)
+    model = DenseNet(growth_rate, block_config, num_init_features, input_channels, **kwargs)
     if pretrained:
         _load_state_dict(model, model_urls[arch], progress)
     return model
@@ -282,7 +284,7 @@ def densenet161(pretrained: bool = False, progress: bool = True, **kwargs: Any) 
                      **kwargs)
 
 
-def densenet169(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> DenseNet:
+def densenet169(pretrained: bool = False, progress: bool = True, input_channels: int = 3, **kwargs: Any) -> DenseNet:
     r"""Densenet-169 model from
     `"Densely Connected Convolutional Networks" <https://arxiv.org/pdf/1608.06993.pdf>`_.
 
@@ -292,7 +294,7 @@ def densenet169(pretrained: bool = False, progress: bool = True, **kwargs: Any) 
         memory_efficient (bool) - If True, uses checkpointing. Much more memory efficient,
           but slower. Default: *False*. See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_.
     """
-    return _densenet('densenet169', 32, (6, 12, 32, 32), 64, pretrained, progress,
+    return _densenet('densenet169', 32, (6, 12, 32, 32), 64, pretrained, progress, input_channels,
                      **kwargs)
 
 

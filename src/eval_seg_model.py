@@ -1,28 +1,31 @@
+import pathlib as pl
+from typing import Optional, Tuple
+
+import numpy as np
 import torch as t
 import torch.nn as nn
-import torch.utils.data as d
 import torch.optim as o
-from models import vgg as mv, resnet as mr, densenet as md
-import src.sun_rgbd_dataset as ss
-import numpy as np
-from typing import Tuple, Optional
-import torchvision.models.vgg as vgg
+import torch.utils.data as d
 import torchvision.models._utils as su
 import torchvision.models.segmentation.deeplabv3 as dl
+
+import models as m
+import arg_parser as apr
+import src.sun_rgbd_dataset as ss
 
 
 def init_backbone(model: str, channel_cnt: int) -> nn.Module:
     if model == 'vgg':
-        backbone = mv.vgg16(pretrained=False, in_channels=channel_cnt)  # mv.vgg16(pretrained=False)
-        in_features = backbone.classifier[6].in_features
-        backbone.classifier[6] = nn.Linear(in_features, in_features)
-        return_layers = {'features': 'out'}
-        return su.IntermediateLayerGetter(backbone, return_layers=return_layers)
+        backbone = m.vgg(pretrained=False, in_channels=channel_cnt)  # mv.vgg16(pretrained=False)
+        # in_features = backbone.classifier[6].in_features
+        # backbone.classifier[6] = nn.Linear(in_features, in_features)
+        return su.IntermediateLayerGetter(backbone, return_layers={'features': 'out'})
     elif model == 'resnet':
-        backbone = mr.resnet50(input_channels=channel_cnt)
-        return su.IntermediateLayerGetter(backbone, {'layer4': 'out'})
+        backbone = m.resnet(input_channels=channel_cnt)
+        return su.IntermediateLayerGetter(backbone, return_layers={'layer4': 'out'})
     elif model == 'densenet':
-        pass
+        backbone = m.densenet(input_channels=channel_cnt)
+        return su.IntermediateLayerGetter(backbone, return_layers={'features': 'out'})
     raise ValueError(f'model {model} is an unsupported model')
 
 
@@ -82,8 +85,16 @@ def cuda_tensor_to_np_arr(tensor):
     return tensor.cpu().numpy()[0]
 
 
-def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device,
-                   epochs: int, optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int):
+def adjust_scheduler(optimzer: o.Optimizer, iters: int, max_iters: int) -> o.Optimizer:
+    optimzer.param_groups[0]['lr'] *= (1 - (iters / max_iters)) ** .9
+    return optimzer
+
+
+def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device, epochs: int,
+                   optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path]) \
+        -> None:
+    scheduler_count, iters = 0, 0
+    max_iters = epochs * len(train_data)
     for epoch in range(epochs):
         print(f'epoch {epoch}')
         for i, (channels, seg_mask) in enumerate(train_data):
@@ -97,6 +108,12 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
             loss.backward()
             optimizer.step()
 
+            scheduler_count += 1
+            iters += 1
+            if scheduler_count == 10:
+                scheduler_count = 0
+                optimizer = adjust_scheduler(optimizer, iters, max_iters)
+
     with t.no_grad():
         model.eval()
         results_hist = None
@@ -109,34 +126,45 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
                                       num_of_classes)
     print(eval_results(results_hist))
 
+    if save_model is not None:
+        t.save(model.state_dict(), save_model)
 
-if __name__ == '__main__':
-    rgb, depth = True, False
-    batch_size = 16
-    epochs = 0
-    worker_count = 4
+
+def init_data_loaders(train_set, test_set, batch_size: int) -> Tuple[d.DataLoader, d.DataLoader]:
     shuffle = True
-    train_dataset, test_dataset = ss.load_sun_rgbd_dataset(True, include_rgb=False, include_depth=True)
-    num_of_classes = train_dataset.CLASS_COUNT
-    train_data = d.DataLoader(dataset=train_dataset,
+    workers = 4
+    train_data = d.DataLoader(dataset=train_set,
                               shuffle=shuffle,
-                              num_workers=worker_count,
+                              num_workers=workers,
                               batch_size=batch_size,
                               drop_last=True)
-    test_data = d.DataLoader(dataset=test_dataset,
-                             num_workers=worker_count)
+    test_data = d.DataLoader(dataset=test_set,
+                             num_workers=workers,
+                             batch_size=batch_size)
+    return train_data, test_data
+
+
+if __name__ == '__main__':
+    args = apr.get_user_args()
+    rgb, depth = args['channels']
+    train_dataset, test_dataset = ss.load_sun_rgbd_dataset(True, include_rgb=rgb, include_depth=depth)
+    num_of_classes = train_dataset.CLASS_COUNT
+    train_data, test_data = init_data_loaders(train_dataset, test_dataset, args['batch_size'])
+
     loss_func = nn.CrossEntropyLoss()
     device = get_device()
     model = init_model(num_of_classes=train_dataset.CLASS_COUNT,
                        device=device,
                        num_of_channels=train_dataset.channel_count,
-                       model='resnet')
+                       model=args['model'])
     optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9)
+
     train_and_eval(model=model,
-                   epochs=epochs,
+                   epochs=args['epochs'],
                    optimizer=optimizer,
                    loss_func=loss_func,
                    train_data=train_data,
                    test_data=test_data,
                    device=device,
-                   num_of_classes=num_of_classes)
+                   num_of_classes=train_dataset.CLASS_COUNT,
+                   save_model=None)

@@ -1,13 +1,15 @@
-import torch.utils.data as tud
-import paths as p
-import torch as t
-import numpy as np
+import abc
 import pathlib as pl
 from typing import Set, Tuple
+
+import PIL.Image as pi
+import numpy as np
+import torch as t
+import torch.utils.data as tud
 import torchvision.transforms as tvt
 import torchvision.transforms.functional as tvf
-import PIL.Image as pi
-import abc
+
+import paths as p
 
 # INPUT_SIZE = (640, 480)  # around a 4 / 3 ratio
 INPUT_SIZE = 425
