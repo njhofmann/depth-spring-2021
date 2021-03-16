@@ -1,6 +1,7 @@
 import abc
 import pathlib as pl
 from typing import Set, Tuple
+import random as r
 
 import PIL.Image as pi
 import numpy as np
@@ -84,10 +85,13 @@ class GenericSUNRGBDDataset(tud.Dataset):
         img = normalize(img)
         return img, label
 
-    def __getitem__(self, idx):
+    def __get_sample_dirc(self, idx: int) -> pl.Path:
+        return self.dircs[idx]
+
+    def __getitem__(self, idx: int):
         # TODO figure out proper formatting for this
         # TODO train vs test for transforms
-        sample_dirc = self.dircs[idx]
+        sample_dirc = self.__get_sample_dirc(idx)
         rgb_img, depth_img = None, None
 
         if self.include_rgb:
@@ -127,13 +131,45 @@ class GenericSUNRGBDDataset(tud.Dataset):
             cnt += 1
         return cnt
 
+    def view_img(self, idx: int) -> None:
+        """Utility method for viewing an image, its depth map, its semantic segmentation labels, and its bounding boxes
+        all at once"""
+        sample_dirc = self.__get_sample_dirc(idx)
+        # TODO this
+
 
 class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
+    TRANSFORM_PROB = .5
 
     def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True):
         super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth)
         self.cropper = tvt.RandomCrop(INPUT_SIZE)
         self.jitter = tvt.ColorJitter()
+
+    def __random_select(self, prob: float = .5) -> float:
+        return r.random() < prob
+
+    def __flip_img(self, img, label):
+        if self.__random_select():
+            img = tvf.vflip(img)
+
+            if self.semantic_or_box:
+                label = tvf.vflip(label)
+
+        if self.__random_select():
+            img = tvf.hflip(img)
+
+            if self.semantic_or_box:
+                label = tvf.hflip(label)
+
+        return img, label
+
+    def __rotate_img(self, img, label):
+        rotation = r.choices([0.0, 90.0, 180.0, 270.0], weights=[.5, .5 / 3, .5 / 3, .5 / 3], k=1)[0]
+        img = tvf.rotate(img, rotation)
+        if self.semantic_or_box:
+            label = tvf.rotate(label, rotation)
+        return img, label
 
     def _apply_augments(self, img, label):
         # TODO for bounding box
@@ -147,6 +183,8 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         if self.include_rgb:
             img[:3] = self.jitter(img[:3])
 
+        img, label = self.__flip_img(img, label)
+        img, label = self.__rotate_img(img, label)
         return img, label
 
 

@@ -15,12 +15,12 @@ def parse_channels(arg: str) -> Tuple[bool, bool]:
 
 def init_arg_parser() -> ap.ArgumentParser:
     parser = ap.ArgumentParser()
-    parser.add_argument('model', required=True)
-    parser.add_argument('epochs', type=int, default=100)
-    parser.add_argument('channels', type=parse_channels)
-    parser.add_argument('seg', action='store_true')
-    parser.add_argument('box', action='store_true')
-    parser.add_argument('batch_size', type=int, default=16)
+    parser.add_argument('--model', '-m', default='vgg')
+    parser.add_argument('--epochs', '-e', type=int, default=100)
+    parser.add_argument('--channels', '-c', type=parse_channels)
+    parser.add_argument('--seg', '-s', action='store_true')
+    parser.add_argument('--box', '-b', action='store_true')
+    parser.add_argument('--batch_size', '-bs', type=int, default=16)
     # TODO dataset,
     return parser
 

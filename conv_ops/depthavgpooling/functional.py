@@ -4,6 +4,7 @@ from torch.autograd import Function
 if torch.cuda.is_available():
     import depthavgpooling
 
+
 class DepthavgpoolingFunction(Function):
     @staticmethod
     def outputSize(input, kernel_size, stride, padding):
@@ -20,7 +21,7 @@ class DepthavgpoolingFunction(Function):
         return output_size
 
     @staticmethod
-    def forward(ctx, input, depth, kernel_size=[3,3], alpha=1.0, stride=[1,1], padding=[0,0], useDepth=True):
+    def forward(ctx, input, depth, kernel_size=[3, 3], alpha=1.0, stride=[1, 1], padding=[0, 0], useDepth=True):
         ctx.save_for_backward(input, depth)
 
         ctx.depthweightcount = input.new(*(depth.size())).zero_()
@@ -36,9 +37,9 @@ class DepthavgpoolingFunction(Function):
             raise NotImplementedError
         else:
             return depthavgpooling.forward(
-                    input, depth, ctx.depthweightcount,
-                    kernel_size[1], kernel_size[0], stride[1], stride[0],
-                    padding[1], padding[0], useDepth)
+                input, depth, ctx.depthweightcount,
+                kernel_size[1], kernel_size[0], stride[1], stride[0],
+                padding[1], padding[0], useDepth)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -56,6 +57,7 @@ class DepthavgpoolingFunction(Function):
                     ctx.kernel_size[1], ctx.kernel_size[0], ctx.stride[1], ctx.stride[0],
                     ctx.padding[1], ctx.padding[0], ctx.useDepth)
             except RuntimeError as e:
-                print("Error in AvgPooling: kernel:{}, stride:{}, padding:{}".format(ctx.kernel_size, ctx.stride, ctx.padding))
+                print("Error in AvgPooling: kernel:{}, stride:{}, padding:{}".format(ctx.kernel_size, ctx.stride,
+                                                                                     ctx.padding))
                 raise e
         return grad_input, None, None, None, None, None, None

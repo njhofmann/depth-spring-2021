@@ -1,7 +1,6 @@
 import pathlib as pl
 from typing import Optional, Tuple
 
-import numpy as np
 import torch as t
 import torch.nn as nn
 import torch.optim as o
@@ -12,6 +11,7 @@ import torchvision.models.segmentation.deeplabv3 as dl
 import models as m
 import arg_parser as apr
 import src.sun_rgbd_dataset as ss
+from src.eval import build_hist, eval_results
 
 
 def init_backbone(model: str, channel_cnt: int) -> nn.Module:
@@ -46,41 +46,6 @@ def init_model(num_of_classes: int, num_of_channels: int, model: str, device):
     return seg_model
 
 
-def _fast_hist(label_true, label_pred, n_class):
-    mask = (label_true >= 0) & (label_true < n_class)
-    return np.bincount(n_class * label_true[mask].astype(int) + label_pred[mask],
-                       minlength=n_class ** 2).reshape(n_class, n_class)
-
-
-def build_hist(true_label, pred_label, hist: Optional[np.ndarray] = None, n_class: Optional[int] = None):
-    if hist is None:
-        hist = np.zeros((n_class, n_class))
-    return hist + _fast_hist(true_label.flatten(), pred_label.flatten(), n_class)
-
-
-def eval_results(hist, return_iu: bool = False):
-    """Evaluates the given list of predicted semantic segmentation masks with the following metrics
-      - overall accuracy
-      - mean accuracy
-      - mean IU
-      - fwavacc
-    """
-    # label_trues, label_preds, n_class, return_iu=False
-    # hist = np.zeros((n_class, n_class))
-    # for lt, lp in zip(label_trues, label_preds):
-    #     hist += _fast_hist(lt.flatten(), lp.flatten(), n_class)
-    acc = np.diag(hist).sum() / hist.sum()
-    acc_cls = np.diag(hist) / hist.sum(axis=1)
-    acc_cls = np.nanmean(acc_cls)
-    iu = np.diag(hist) / (hist.sum(axis=1) + hist.sum(axis=0) - np.diag(hist))
-    mean_iu = np.nanmean(iu)
-    freq = hist.sum(axis=1) / hist.sum()
-    fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
-    if return_iu:
-        return acc, acc_cls, mean_iu, fwavacc, iu[freq > 0]
-    return acc, acc_cls, mean_iu, fwavacc
-
-
 def cuda_tensor_to_np_arr(tensor):
     return tensor.cpu().numpy()[0]
 
@@ -103,7 +68,8 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
             optimizer.zero_grad()
 
             # forward prop + backward prop + optimizer
-            outputs = t.softmax(model(channels)['out'], dim=1)
+            # TODO softmax already done here...?
+            outputs = model(channels)['out'] # t.softmax(model(channels)['out'], dim=1)
             loss = loss_func(outputs, seg_mask)
             loss.backward()
             optimizer.step()
@@ -146,21 +112,24 @@ def init_data_loaders(train_set, test_set, batch_size: int) -> Tuple[d.DataLoade
 
 if __name__ == '__main__':
     args = apr.get_user_args()
-    rgb, depth = args['channels']
-    train_dataset, test_dataset = ss.load_sun_rgbd_dataset(True, include_rgb=rgb, include_depth=depth)
+    rgb, depth = args.channels
+    semantic_or_box = args.seg
+    train_dataset, test_dataset = ss.load_sun_rgbd_dataset(semantic_or_box=semantic_or_box,
+                                                           include_rgb=rgb,
+                                                           include_depth=depth)
     num_of_classes = train_dataset.CLASS_COUNT
-    train_data, test_data = init_data_loaders(train_dataset, test_dataset, args['batch_size'])
+    train_data, test_data = init_data_loaders(train_dataset, test_dataset, args.batch_size)
 
     loss_func = nn.CrossEntropyLoss()
     device = get_device()
     model = init_model(num_of_classes=train_dataset.CLASS_COUNT,
                        device=device,
                        num_of_channels=train_dataset.channel_count,
-                       model=args['model'])
+                       model=args.model)
     optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9)
 
     train_and_eval(model=model,
-                   epochs=args['epochs'],
+                   epochs=args.epochs,
                    optimizer=optimizer,
                    loss_func=loss_func,
                    train_data=train_data,
