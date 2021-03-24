@@ -63,6 +63,7 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
     for epoch in range(epochs):
         print(f'epoch {epoch}')
         for i, (channels, seg_mask) in enumerate(train_data):
+            print(f'iteration {i}')
             channels, seg_mask = channels.to(device), seg_mask.to(device)
             # zero the parameter gradients
             optimizer.zero_grad()
