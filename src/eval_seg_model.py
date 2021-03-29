@@ -9,7 +9,7 @@ import torchvision.models._utils as su
 import torchvision.models.segmentation.deeplabv3 as dl
 
 import models as m
-import arg_parser as apr
+import src.arg_parser as apr
 import src.sun_rgbd_dataset as ss
 from src.eval import build_hist, eval_results
 
@@ -56,8 +56,10 @@ def adjust_scheduler(optimzer: o.Optimizer, iters: int, max_iters: int) -> o.Opt
 
 
 def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device, epochs: int,
-                   optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path]) \
+                   optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path],
+                   iter_eval: int) \
         -> None:
+    losses = []
     scheduler_count, iters = 0, 0
     max_iters = epochs * len(train_data)
     for epoch in range(epochs):
@@ -69,11 +71,14 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
             optimizer.zero_grad()
 
             # forward prop + backward prop + optimizer
-            # TODO softmax already done here...?
-            outputs = model(channels)['out'] # t.softmax(model(channels)['out'], dim=1)
+            outputs = model(channels)['out']
             loss = loss_func(outputs, seg_mask)
             loss.backward()
             optimizer.step()
+
+            if iter_eval > 0 and iters % iter_eval == 0:
+                losses.append((iters, loss))
+                print(f'loss: {loss}')
 
             scheduler_count += 1
             iters += 1
@@ -128,7 +133,7 @@ if __name__ == '__main__':
                        num_of_channels=train_dataset.channel_count,
                        model=args.model)
     optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9)
-
+    iter_eval = args.iter_eval
     train_and_eval(model=model,
                    epochs=args.epochs,
                    optimizer=optimizer,
@@ -137,4 +142,5 @@ if __name__ == '__main__':
                    test_data=test_data,
                    device=device,
                    num_of_classes=train_dataset.CLASS_COUNT,
-                   save_model=None)
+                   save_model=None,
+                   iter_eval=iter_eval)

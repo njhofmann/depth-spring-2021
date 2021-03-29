@@ -21,6 +21,10 @@ def init_arg_parser() -> ap.ArgumentParser:
     parser.add_argument('--seg', '-s', action='store_true', default=True)
     parser.add_argument('--box', '-b', action='store_true')
     parser.add_argument('--batch_size', '-bs', type=int, default=16)
+    parser.add_argument('--iter_eval', '-ie', type=int, default=50,
+                        help='prints and saves the status of training (loss, etc.) every given amount of intervals, if '
+                             'negative displays & saves nothing')
+
     # TODO dataset,
     return parser
 

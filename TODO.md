@@ -2,7 +2,9 @@
    1. catch up on basic docs
    1. basic readme
    1. credit
-1. double check bounding boxes
+1. model eval stuff
+   1. record training loss per iterations
+   1. 
 1. set up object detection eval 
    1. set up dataloader pipelines for sun rgb-d data bounding boxes
       1. boundary conditions
