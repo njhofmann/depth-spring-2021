@@ -215,6 +215,7 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
         if self.semantic_or_box:
             label_cmap = 'flag'
+            # TODO fix me, add additional bounding box
             label = self._channels_first(label)
         else:
             label_cmap = None
@@ -312,7 +313,6 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         return img, label
 
 
-
 class SUNRGBDTestDataset(GenericSUNRGBDDataset):
 
     def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True):
@@ -325,11 +325,11 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
             label = self.cropper(label)
         else:
             rows, cols = img.shape[-2:]
+            # TODO fix me
             label = super()._apply_bbox_transform(label, af.bbox_center_crop, *INPUT_SHAPE, rows, cols)
         return img, label
 
     def _apply_augments(self, img, label):
-        # TODO for bounding box
         img, label = super()._apply_augments(img, label)
         img, label = self._crop_img(img, label)
         return img, label
@@ -342,6 +342,5 @@ def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_dept
 
 
 if __name__ == '__main__':
-    a = SUNRGBDTestDataset(True)
-    for i in range(len(a)):
-        print(a[i][1].shape)
+    a = SUNRGBDTestDataset(False)
+    a.view_raw_img(0)

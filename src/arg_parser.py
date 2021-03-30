@@ -24,7 +24,7 @@ def init_arg_parser() -> ap.ArgumentParser:
     parser.add_argument('--iter_eval', '-ie', type=int, default=50,
                         help='prints and saves the status of training (loss, etc.) every given amount of intervals, if '
                              'negative displays & saves nothing')
-
+    parser.add_argument('--model_name', '-mn', type=str, default=None)
     # TODO dataset,
     return parser
 
