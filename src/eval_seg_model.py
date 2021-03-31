@@ -1,5 +1,6 @@
 import pathlib as pl
 from typing import Optional, Tuple, List
+import math as m
 
 import pandas as pd
 import torch as t
@@ -23,7 +24,11 @@ def cuda_tensor_to_np_arr(tensor):
 
 
 def adjust_scheduler(optimzer: o.Optimizer, iters: int, max_iters: int) -> o.Optimizer:
-    optimzer.param_groups[0]['lr'] *= (1 - (iters / max_iters)) ** .9
+    old_lr = optimzer.param_groups[0]['lr']
+    print(old_lr * ((1 - (iters / max_iters)) ** .9))
+    new_lr = max(1e-6, old_lr * ((1 - (iters / max_iters)) ** .9))
+    print(new_lr)
+    optimzer.param_groups[0]['lr'] = new_lr
     return optimzer
 
 
@@ -32,13 +37,23 @@ def save_loss_results(path: pl.Path, losses: List[Tuple[int, float]]) -> None:
     pd.DataFrame(losses, columns=['iterations', 'loss']).to_csv(path, index=False)
 
 
-def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device, epochs: int,
+def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device, epochs: Optional[int],
                    optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path],
-                   iter_eval: int) -> None:
+                   iter_eval: int, max_iters: Optional[int]) -> None:
+    # either epochs or max_iters is None
+    if max_iters is None:
+        max_iters = epochs * len(train_data)
+
+    if epochs is None:
+        epochs = m.ceil(max_iters / m.floor(len(train_data) / batch_size))
+
     losses = []
     scheduler_count, iters = 0, 0
-    max_iters = epochs * len(train_data)
     for epoch in range(epochs):
+
+        if iters >= max_iters:
+            break
+
         print(f'epoch {epoch}')
         for i, (channels, seg_mask) in enumerate(train_data):
             channels, seg_mask = channels.to(device), seg_mask.to(device)
@@ -51,12 +66,16 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
             loss.backward()
             optimizer.step()
 
-            if iter_eval > 0 and iters % iter_eval == 0:
-                losses.append((iters, loss.data[0]))
-                print(f'iteration: {iters}, loss: {loss}')
-
             scheduler_count += 1
             iters += 1
+
+            if iter_eval > 0 and iters % iter_eval == 0:
+                losses.append((iters, loss.item()))
+                print(f'iteration: {iters}, loss: {loss}')
+
+            if iters >= max_iters:
+                break
+
             if scheduler_count == 10:
                 scheduler_count = 0
                 optimizer = adjust_scheduler(optimizer, iters, max_iters)
@@ -66,15 +85,17 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
         results_hist = None
         for i, (channels, seg_mask) in enumerate(test_data):
             channels, seg_mask = channels.to(device), seg_mask.to(device)
+            # TODO check me?
             pred_seg_mask = t.argmax(t.softmax(model(channels)['out'], dim=1), dim=1)
             results_hist = e.build_hist(cuda_tensor_to_np_arr(seg_mask),
                                         cuda_tensor_to_np_arr(pred_seg_mask),
                                         results_hist,
                                         num_of_classes)
     print(e.eval_results(results_hist))
+
     loss_results_path = p.RESULTS_DIRC.joinpath('results.csv')
     if save_model is not None:
-        loss_results_path = loss_results_path.parent.joinpath(f'{save_model.name.split(".")[0]}_results.csv')
+        loss_results_path = p.RESULTS_DIRC.joinpath(f'{save_model.name.split(".")[0]}_results.csv')
         t.save(model.state_dict(), save_model)
 
     save_loss_results(loss_results_path, losses)
@@ -97,7 +118,7 @@ def init_data_loaders(train_set, test_set, batch_size: int) -> Tuple[d.DataLoade
 def create_model_save_path(model_name: Optional[str]) -> Optional[pl.Path]:
     path = None if model_name is None else p.TRAINED_MODELS_DIRC.joinpath(f'{model_name}.pt')
     if path is not None:
-        path.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
     return path
 
 
@@ -108,7 +129,8 @@ if __name__ == '__main__':
     batch_size = args.batch_size
     train_dataset, test_dataset = sr.load_sun_rgbd_dataset(semantic_or_box=semantic_or_box,
                                                            include_rgb=rgb,
-                                                           include_depth=depth)
+                                                           include_depth=depth,
+                                                           augment=args.no_augment)
     num_of_classes = train_dataset.CLASS_COUNT
     train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size)
 
@@ -123,10 +145,11 @@ if __name__ == '__main__':
 
     ti.summary(model=model, input_size=(batch_size, train_dataset.channel_count, *sr.INPUT_SHAPE))
 
-    optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9)
+    optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=.0004)
     iter_eval = args.iter_eval
     train_and_eval(model=model,
                    epochs=args.epochs,
+                   max_iters=args.iterations,
                    optimizer=optimizer,
                    loss_func=loss_func,
                    train_data=train_data,

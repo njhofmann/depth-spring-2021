@@ -18,7 +18,7 @@ def build_hist(true_label, pred_label, hist: Optional[np.ndarray] = None, n_clas
 def eval_results(hist, return_iu: bool = False):
     """Evaluates the given list of predicted semantic segmentation masks with the following metrics
       - overall accuracy
-      - mean accuracy
+      - mean accuracy per class
       - mean IU
       - fwavacc
     """
@@ -35,4 +35,5 @@ def eval_results(hist, return_iu: bool = False):
     fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
     if return_iu:
         return acc, acc_cls, mean_iu, fwavacc, iu[freq > 0]
-    return acc, acc_cls, mean_iu, fwavacc
+    # TODO fix names
+    return {'accuracy': acc, 'class accuracy': acc_cls, 'mean iu': mean_iu, 'fwav accuracy': fwavacc}

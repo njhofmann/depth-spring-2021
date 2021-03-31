@@ -232,7 +232,6 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
 
 class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
-    TRANSFORM_PROB = .5
 
     def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True, augment: bool = True):
         super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth, augment)
@@ -271,7 +270,7 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         return img, label
 
     def _rotate_img(self, img, label):
-        if self._random_select():
+        if self._random_select(.25):
             img = tvf.rotate(img, 180)
 
             if self.semantic_or_box:
@@ -295,7 +294,7 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         return img, label
 
     def _jitter_img(self, img, label):
-        if self.include_rgb:
+        if self.include_rgb and self._random_select(.3):
             img[:3] = self.jitter(img[:3])
         return img, label
 
@@ -335,9 +334,9 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         return img, label
 
 
-def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_depth: bool) \
+def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_depth: bool, augment: bool) \
         -> Tuple[SUNRGBDTrainDataset, SUNRGBDTestDataset]:
-    return SUNRGBDTrainDataset(semantic_or_box, include_rgb, include_depth), \
+    return SUNRGBDTrainDataset(semantic_or_box, include_rgb, include_depth, augment), \
            SUNRGBDTestDataset(semantic_or_box, include_rgb, include_depth)
 
 

@@ -2,6 +2,7 @@
    1. catch up on basic docs
    1. basic readme
    1. credit
+1. add any thing variable to argparser   
 1. set up object detection eval 
    1. set up dataloader pipelines for sun rgb-d data bounding boxes
       1. boundary conditions
