@@ -13,6 +13,7 @@ import torchvision.transforms.functional as tvf
 import albumentations.augmentations.functional as af
 
 import paths as p
+import src.bbox_augments as bb
 
 INPUT_SHAPE = (425, 560)
 MAX_DEPTH = 65400  # from training data
@@ -102,7 +103,7 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
             box[2] += box[0]
             box[3] += box[1]
             boxes.append(box)
-        return boxes
+        return np.array(boxes)
 
     def _load_semantic_label(self, dirc: pl.Path):
         return t.as_tensor(self.tensorer(pi.open(dirc.joinpath('semantic_segs.png'))) * 255, dtype=t.long)
@@ -180,7 +181,7 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         for box in boxes:
             if any([x < 0 for x in box]):
                 raise ValueError(f'negative coordinate found in bounding box {box}')
-            box_draw.rectangle(box, outline='black', width=5)
+            box_draw.rectangle(list(box), outline='black', width=5)
         return np.array(box_img) / 255
 
     def _channels_first(self, img: t.Tensor) -> np.ndarray:
@@ -242,17 +243,14 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         return r.random() < prob
 
     def _flip_img(self, img, label):
+        # double flip == rotation by 180
         if self._random_select():
             img = tvf.vflip(img)
 
             if self.semantic_or_box:
                 label = tvf.vflip(label)
             else:
-                rows, cols = img.shape[-2:]
-                print(label)
-                label = super()._apply_bbox_transform(label, af.bbox_vflip, rows, cols)
-                print(label)
-                label = [tuple(abs(i) for i in x) for x in label]
+                label = bb.bbox_vflip(label, img.shape[-2])
 
         if self._random_select():
             img = tvf.hflip(img)
@@ -260,25 +258,8 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
             if self.semantic_or_box:
                 label = tvf.hflip(label)
             else:
-                rows, cols = img.shape[-2:]
-                # TODO fix this, negative coordinates given
-                print(label)
-                label = super()._apply_bbox_transform(label, af.bbox_hflip, rows, cols)
-                print(label)
-                label = [tuple(abs(i) for i in x) for x in label]
+                label = bb.bbox_hflip(label, img.shape[-1])
 
-        return img, label
-
-    def _rotate_img(self, img, label):
-        if self._random_select(.25):
-            img = tvf.rotate(img, 180)
-
-            if self.semantic_or_box:
-                label = tvf.rotate(label, 180)
-            else:
-                rows, cols = img.shape[-2:]
-                label = super()._apply_bbox_transform(label, af.bbox_rot90, 2, rows, cols)
-                print(label)
         return img, label
 
     def _crop_img(self, img, label):
@@ -288,18 +269,21 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         if self.semantic_or_box:
             label = tvf.crop(label, *cropper_params)
         else:
-            rows, cols = img.shape[-2:]
-            label = super()._apply_bbox_transform(label, af.bbox_crop, *cropper_params, rows, cols)
+            # TODO fix me
+            cropper_params = [cropper_params[0],
+                              cropper_params[1],
+                              cropper_params[0] + cropper_params[2],
+                              cropper_params[1] + cropper_params[3]]
+            label = bb.bbox_crop(label, *cropper_params)
 
         return img, label
 
     def _jitter_img(self, img, label):
-        if self.include_rgb and self._random_select(.3):
+        if self.include_rgb and self._random_select(.5):
             img[:3] = self.jitter(img[:3])
         return img, label
 
     def _apply_augments(self, img, label):
-        # TODO for bounding box
         img, label = super()._apply_augments(img, label)
 
         if not self.augment:
@@ -307,7 +291,7 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 
         # keep this this order
         # TODO bounding box jittering...?
-        for func in self._crop_img, self._jitter_img, self._flip_img, self._rotate_img:
+        for func in self._jitter_img, self._flip_img, self._crop_img:
             img, label = func(img, label)
         return img, label
 
@@ -323,9 +307,8 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         if self.semantic_or_box:
             label = self.cropper(label)
         else:
-            rows, cols = img.shape[-2:]
             # TODO fix me
-            label = super()._apply_bbox_transform(label, af.bbox_center_crop, *INPUT_SHAPE, rows, cols)
+            label = bb.bbox_crop(label, img.shape[-2])
         return img, label
 
     def _apply_augments(self, img, label):
@@ -341,5 +324,5 @@ def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_dept
 
 
 if __name__ == '__main__':
-    a = SUNRGBDTestDataset(False)
-    a.view_raw_img(0)
+    a = SUNRGBDTrainDataset(False)
+    a.view_img(100)

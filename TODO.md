@@ -2,8 +2,13 @@
    1. catch up on basic docs
    1. basic readme
    1. credit
+1. gaussian noise?
+1. list of all things to run   
 1. add any thing variable to argparser   
-1. set up object detection eval 
+1. set up object detection pipeline
+   1. add relevant architectures
+   1. training & testing metrics
+   1. finish augmentation   
    1. set up dataloader pipelines for sun rgb-d data bounding boxes
       1. boundary conditions
    1. evaluation metrics?
@@ -12,6 +17,7 @@
       1. numpy loading
 1. set up depth operators
     1. integrate with existing models
+    1. look at paper for extensions   
     1. easily interchangeable with conv2d?
     1. max extension?
     1. finish setting up

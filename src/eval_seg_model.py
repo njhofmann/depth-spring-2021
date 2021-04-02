@@ -25,16 +25,16 @@ def cuda_tensor_to_np_arr(tensor):
 
 def adjust_scheduler(optimzer: o.Optimizer, iters: int, max_iters: int) -> o.Optimizer:
     old_lr = optimzer.param_groups[0]['lr']
-    print(old_lr * ((1 - (iters / max_iters)) ** .9))
     new_lr = max(1e-6, old_lr * ((1 - (iters / max_iters)) ** .9))
-    print(new_lr)
     optimzer.param_groups[0]['lr'] = new_lr
     return optimzer
 
 
-def save_loss_results(path: pl.Path, losses: List[Tuple[int, float]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(losses, columns=['iterations', 'loss']).to_csv(path, index=False)
+def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, float]], epoch_path: pl.Path,
+                      epoch_losses: List[Tuple[int, float]]) -> None:
+    iter_path.parent.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(iter_losses, columns=['iteration', 'loss']).to_csv(iter_path, index=False)
+    pd.DataFrame(epoch_losses, columns=['epoch', 'loss']).to_csv(epoch_path, index=False)
 
 
 def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device, epochs: Optional[int],
@@ -42,21 +42,24 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
                    iter_eval: int, max_iters: Optional[int]) -> None:
     # either epochs or max_iters is None
     if max_iters is None:
-        max_iters = epochs * len(train_data)
+        max_iters = epochs * (m.floor(len(train_data.dataset) / batch_size))
 
     if epochs is None:
-        epochs = m.ceil(max_iters / m.floor(len(train_data) / batch_size))
+        epochs = m.ceil(max_iters / m.floor(len(train_data.dataset) / batch_size))
 
-    losses = []
+    iter_losses = []
+    epoch_losses = []
     scheduler_count, iters = 0, 0
     for epoch in range(epochs):
 
         if iters >= max_iters:
             break
 
+        running_loss = 0
         print(f'epoch {epoch}')
         for i, (channels, seg_mask) in enumerate(train_data):
             channels, seg_mask = channels.to(device), seg_mask.to(device)
+
             # zero the parameter gradients
             optimizer.zero_grad()
 
@@ -68,9 +71,10 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
 
             scheduler_count += 1
             iters += 1
+            running_loss += loss.item() * outputs.shape[0]  # avg loss for mini batch * batch size
 
             if iter_eval > 0 and iters % iter_eval == 0:
-                losses.append((iters, loss.item()))
+                iter_losses.append((iters, loss.item()))
                 print(f'iteration: {iters}, loss: {loss}')
 
             if iters >= max_iters:
@@ -78,14 +82,17 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
 
             if scheduler_count == 10:
                 scheduler_count = 0
-                optimizer = adjust_scheduler(optimizer, iters, max_iters)
+                #optimizer = adjust_scheduler(optimizer, iters, max_iters)
+
+        epoch_loss = running_loss / len(train_data.dataset)
+        print(f'epoch {epoch}, epoch loss {epoch_loss}')
+        epoch_losses.append((epoch, epoch_loss))
 
     with t.no_grad():
         model.eval()
         results_hist = None
         for i, (channels, seg_mask) in enumerate(test_data):
             channels, seg_mask = channels.to(device), seg_mask.to(device)
-            # TODO check me?
             pred_seg_mask = t.argmax(t.softmax(model(channels)['out'], dim=1), dim=1)
             results_hist = e.build_hist(cuda_tensor_to_np_arr(seg_mask),
                                         cuda_tensor_to_np_arr(pred_seg_mask),
@@ -93,12 +100,15 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
                                         num_of_classes)
     print(e.eval_results(results_hist))
 
-    loss_results_path = p.RESULTS_DIRC.joinpath('results.csv')
+    iter_loss_path = p.RESULTS_DIRC.joinpath('iter_results.csv')
+    epoch_loss_path = p.RESULTS_DIRC.joinpath('epoch_results.csv')
     if save_model is not None:
-        loss_results_path = p.RESULTS_DIRC.joinpath(f'{save_model.name.split(".")[0]}_results.csv')
+        model_name = save_model.name.split(".")[0]
+        iter_loss_path = p.RESULTS_DIRC.joinpath(f'{model_name}_iter_results.csv')
+        epoch_loss_path = p.RESULTS_DIRC.joinpath(f'{model_name}_epoch_results.csv')
         t.save(model.state_dict(), save_model)
 
-    save_loss_results(loss_results_path, losses)
+    save_loss_results(iter_loss_path, iter_losses, epoch_loss_path, epoch_losses)
 
 
 def init_data_loaders(train_set, test_set, batch_size: int) -> Tuple[d.DataLoader, d.DataLoader]:
