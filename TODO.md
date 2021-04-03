@@ -21,6 +21,7 @@
     1. easily interchangeable with conv2d?
     1. max extension?
     1. finish setting up
+1. integrate transformer architectures?   
 1. baseline experiments for semantic segmentation and object recognition
 1. get additional datasets set up...?
 1. convolutional experiments

@@ -216,7 +216,6 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
         if self.semantic_or_box:
             label_cmap = 'flag'
-            # TODO fix me, add additional bounding box
             label = self._channels_first(label)
         else:
             label_cmap = None
@@ -269,13 +268,12 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
         if self.semantic_or_box:
             label = tvf.crop(label, *cropper_params)
         else:
-            # TODO fix me
-            cropper_params = [cropper_params[0],
-                              cropper_params[1],
-                              cropper_params[0] + cropper_params[2],
-                              cropper_params[1] + cropper_params[3]]
+            # TODO have no clue why this needs to be done
+            cropper_params = [cropper_params[1],
+                              cropper_params[0],
+                              cropper_params[1] + cropper_params[3],
+                              cropper_params[0] + cropper_params[2]]
             label = bb.bbox_crop(label, *cropper_params)
-
         return img, label
 
     def _jitter_img(self, img, label):
@@ -307,8 +305,12 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         if self.semantic_or_box:
             label = self.cropper(label)
         else:
-            # TODO fix me
-            label = bb.bbox_crop(label, img.shape[-2])
+            # TODO get cropper params
+            cropper_params = [cropper_params[1],
+                              cropper_params[0],
+                              cropper_params[1] + cropper_params[3],
+                              cropper_params[0] + cropper_params[2]]
+            label = bb.bbox_crop(label, *cropper_params)
         return img, label
 
     def _apply_augments(self, img, label):
@@ -325,4 +327,5 @@ def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_dept
 
 if __name__ == '__main__':
     a = SUNRGBDTrainDataset(False)
+    a.view_raw_img(100)
     a.view_img(100)
