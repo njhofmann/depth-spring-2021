@@ -6,11 +6,8 @@
 1. list of all things to run   
 1. add any thing variable to argparser   
 1. set up object detection pipeline
-   1. add relevant architectures
-   1. training & testing metrics
-   1. finish augmentation   
-   1. set up dataloader pipelines for sun rgb-d data bounding boxes
-      1. boundary conditions
+   1. add label outputs from model as well
+   1. finish augmentation
    1. evaluation metrics?
 1. fix runtime warnings
       1. true divide line 30 & 32

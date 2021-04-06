@@ -30,6 +30,13 @@ def get_unique_semantic_labels() -> Set[int]:
     return idxs
 
 
+def get_unique_bounding_box_labels() -> Set[str]:
+    names = set()
+    data = SUNRGBDTrainDataset(False)
+    for i in range(len(data)):
+        names.update([])
+
+
 def get_max_depth_val():
     """Returns the largest depth value in the trainig dataset to use for scaling depth images [0, 1.0]. Computationally
     expensive, don't run unless you have to."""
@@ -98,6 +105,7 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
     def _load_bounding_boxes(self, dirc: pl.Path):
         bounding_boxes = np.load(dirc.joinpath('bounding_box.npy'), allow_pickle=True)
         boxes = []
+        box_labels = bounding_boxes[0]['classname']
         for box in bounding_boxes[0]['gtBb2D']:
             box = [max(0, round(x)) for x in box[0]]
             box[2] += box[0]
@@ -162,9 +170,6 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
     def __len__(self):
         return len(self.dircs)
-
-    def _apply_bbox_transform(self, boxes: list, transform: Callable, *args):
-        return [transform(box, *args) for box in boxes]
 
     @property
     def channel_count(self) -> int:
@@ -319,13 +324,12 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         return img, label
 
 
-def load_sun_rgbd_dataset(semantic_or_box: bool, include_rgb: bool, include_depth: bool, augment: bool) \
+def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_depth: bool, augment: bool) \
         -> Tuple[SUNRGBDTrainDataset, SUNRGBDTestDataset]:
-    return SUNRGBDTrainDataset(semantic_or_box, include_rgb, include_depth, augment), \
-           SUNRGBDTestDataset(semantic_or_box, include_rgb, include_depth)
+    return SUNRGBDTrainDataset(segmentation_or_box, include_rgb, include_depth, augment), \
+           SUNRGBDTestDataset(segmentation_or_box, include_rgb, include_depth)
 
 
 if __name__ == '__main__':
     a = SUNRGBDTrainDataset(False)
-    a.view_raw_img(100)
-    a.view_img(100)
+    print(a[0])
