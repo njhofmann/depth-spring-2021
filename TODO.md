@@ -8,10 +8,13 @@
 1. set up object detection pipeline
    1. add label outputs from model as well
    1. finish augmentation
+   1. disallow boxes with no boxes
+   1. use classes with only > X samples, filter images
+      1. redo class idx
+   1. figure out id system   
    1. evaluation metrics?
 1. fix runtime warnings
       1. true divide line 30 & 32
-      1. numpy loading
 1. set up depth operators
     1. integrate with existing models
     1. look at paper for extensions   
@@ -23,7 +26,6 @@
 1. get additional datasets set up...?
 1. convolutional experiments
 
-1. Saving models in pipeline?
-
 https://github.com/ankurhanda/sunrgbd-meta-data
+https://github.com/yfpeng/object_detection_metrics
 https://github.com/crmauceri/DepthAwareCNN-pytorch1.5

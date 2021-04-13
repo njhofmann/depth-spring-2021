@@ -39,7 +39,6 @@ def eval_results(hist, return_iu: bool = False):
     fwavacc = (freq[freq > 0] * iu[freq > 0]).sum()
     if return_iu:
         return acc, acc_cls, mean_iu, fwavacc, iu[freq > 0]
-    # TODO fix names
     return {'accuracy': acc, 'class accuracy': acc_cls, 'mean iu': mean_iu, 'fwav accuracy': fwavacc}
 
 

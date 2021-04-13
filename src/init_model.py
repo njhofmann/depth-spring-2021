@@ -31,10 +31,9 @@ def init_backbone(model: str, channel_cnt: int) -> Tuple[nn.Module, int]:
 
 
 def init_model(num_of_classes: int, num_of_channels: int, model: str, seg_or_box: bool, device):
-    # copied init process from
-    # https://pytorch.org/vision/0.8/_modules/torchvision/models/segmentation/segmentation.html
     backbone, in_channels = init_backbone(model, num_of_channels)
     if seg_or_box:
+        # generated from
         # https://pytorch.org/vision/0.8/_modules/torchvision/models/segmentation/segmentation.html
         classifier = dl.DeepLabHead(in_channels=in_channels, num_classes=num_of_classes)
         model = dl.DeepLabV3(backbone=backbone, classifier=classifier)

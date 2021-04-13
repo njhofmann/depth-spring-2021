@@ -6,11 +6,10 @@ import pandas as pd
 import torch as t
 import torch.nn as nn
 import torch.optim as o
-import torch.utils.data as d
+import torch.utils.data as td
 
 import paths as p
-from src import arg_parser as apr, init_model as im, eval_seg_model as es, sun_rgbd_dataset as sr, \
-    eval_detection_model as ed
+from src import arg_parser as apr, init_model as im, eval_seg_model as es, eval_detection_model as ed, datasets as d
 import torchinfo as ti
 
 
@@ -34,7 +33,18 @@ def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, float]], 
     pd.DataFrame(epoch_losses, columns=['epoch', 'loss']).to_csv(epoch_path, index=False)
 
 
-def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.DataLoader, device, epochs: Optional[int],
+def eval_model(model: nn.Module, data: td.Dataloader, num_of_classes: int, device) -> None:
+    with t.no_grad():
+        model.eval()
+        if segmentation_or_box:
+            results = es.eval_seg_model(model, data, num_of_classes, device)
+        else:
+            # TODO object detection eval here
+            results = ed.eval_detect_model(model, data, device)
+        print(results)
+
+
+def train_and_eval(model: nn.Module, train_data: td.Dataloader, test_data: td.Dataloader, device, epochs: Optional[int],
                    optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path],
                    iter_eval: int, max_iters: Optional[int]) -> None:
     # either epochs or max_iters is None
@@ -54,6 +64,7 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
 
         running_loss = 0
         print(f'epoch {epoch}')
+        # TODO redo training cycle with bounding boxes
         for i, (channels, seg_mask) in enumerate(train_data):
             channels, seg_mask = channels.to(device), seg_mask.to(device)
 
@@ -79,20 +90,14 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
 
             if scheduler_count == 10:
                 scheduler_count = 0
-                #optimizer = adjust_scheduler(optimizer, iters, max_iters)
+                # optimizer = adjust_scheduler(optimizer, iters, max_iters)
 
         epoch_loss = running_loss / len(train_data.dataset)
         print(f'epoch {epoch}, epoch loss {epoch_loss}')
         epoch_losses.append((epoch, epoch_loss))
 
-    with t.no_grad():
-        model.eval()
-        # TODO object detection eval here
-        if segmentation_or_box:
-            results = es.eval_seg_model(model, test_data, num_of_classes, device)
-        else:
-            results = ed.eval_det_model(model, test_data)
-        print()
+    eval_model(model, train_data, num_of_classes, device)
+    eval_model(model, test_data, num_of_classes, device)
 
     iter_loss_path = p.RESULTS_DIRC.joinpath('iter_results.csv')
     epoch_loss_path = p.RESULTS_DIRC.joinpath('epoch_results.csv')
@@ -105,18 +110,17 @@ def train_and_eval(model: nn.Module, train_data: d.DataLoader, test_data: d.Data
     save_loss_results(iter_loss_path, iter_losses, epoch_loss_path, epoch_losses)
 
 
-def init_data_loaders(train_set, test_set, batch_size: int) -> Tuple[d.DataLoader, d.DataLoader]:
+def init_data_loaders(train_set, test_set, batch_size: int, worker_count: int) -> Tuple[td.Dataloader, td.Dataloader]:
     shuffle = True
-    workers = 4
-    train_data = d.DataLoader(dataset=train_set,
-                              shuffle=shuffle,
-                              num_workers=workers,
-                              batch_size=batch_size,
-                              drop_last=True)
-    test_data = d.DataLoader(dataset=test_set,
-                             num_workers=workers,
-                             batch_size=batch_size)
-    return train_data, test_data
+    train = td.Dataloader(dataset=train_set,
+                         shuffle=shuffle,
+                         num_workers=worker_count,
+                         batch_size=batch_size,
+                         drop_last=True)
+    test = td.Dataloader(dataset=test_set,
+                        num_workers=worker_count,
+                        batch_size=batch_size)
+    return train, test
 
 
 def create_model_save_path(model_name: Optional[str]) -> Optional[pl.Path]:
@@ -131,12 +135,13 @@ if __name__ == '__main__':
     rgb, depth = args.channels
     segmentation_or_box = args.seg
     batch_size = args.batch_size
-    train_dataset, test_dataset = sr.load_sun_rgbd_dataset(segmentation_or_box=segmentation_or_box,
+    worker_count = 4 * t.cuda.device_count()
+    train_dataset, test_dataset = d.load_sun_rgbd_dataset(segmentation_or_box=segmentation_or_box,
                                                            include_rgb=rgb,
                                                            include_depth=depth,
                                                            augment=args.no_augment)
     num_of_classes = train_dataset.CLASS_COUNT
-    train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size)
+    train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size, worker_count)
 
     save_model = create_model_save_path(args.model_name)
 
@@ -151,7 +156,7 @@ if __name__ == '__main__':
                           model=args.model,
                           seg_or_box=segmentation_or_box)
 
-    ti.summary(model=model, input_size=(batch_size, train_dataset.channel_count, *sr.INPUT_SHAPE))
+    ti.summary(model=model, input_size=(batch_size, train_dataset.channel_count, *d.INPUT_SHAPE))
 
     optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=.0004)
     iter_eval = args.iter_eval

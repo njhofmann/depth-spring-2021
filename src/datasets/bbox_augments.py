@@ -1,7 +1,14 @@
 import numpy as np
-from typing import Optional, List, Tuple
+from typing import Optional, Tuple
 
 """Data augmentations for bounding boxes"""
+
+
+def adjust_torch_crop_params(crop_params: Tuple[int, int, int, int]) -> Tuple[int, int, int, int]:
+    return (crop_params[1],
+            crop_params[0],
+            crop_params[1] + crop_params[3],
+            crop_params[0] + crop_params[2])
 
 
 def bbox_hflip(bboxes: np.ndarray, cols: int) -> np.ndarray:

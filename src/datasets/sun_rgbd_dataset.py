@@ -1,6 +1,6 @@
 import abc
 import pathlib as pl
-from typing import Set, Tuple, Callable
+from typing import Tuple, Union
 import random as r
 
 from PIL import Image as pi, ImageDraw as pid
@@ -10,63 +10,14 @@ import torch as t
 import torch.utils.data as tud
 import torchvision.transforms as tvt
 import torchvision.transforms.functional as tvf
-import albumentations.augmentations.functional as af
 
 import paths as p
-import src.bbox_augments as bb
+from src.datasets import custom_center_crop as cc, bbox_augments as bb
 
 INPUT_SHAPE = (425, 560)
 MAX_DEPTH = 65400  # from training data
 CHANNEL_MEANS = t.tensor([0.4902, 0.4525, 0.4251, 0.2519])
 CHANNEL_STDS = t.tensor([0.2512, 0.2564, 0.2581, 0.1227])
-
-
-def get_unique_semantic_labels() -> Set[int]:
-    """Utility function to check the integers making up semantic images"""
-    idxs = set()
-    data = SUNRGBDTrainDataset(True)
-    for i in range(len(data)):
-        idxs.update([x.item() for x in t.unique(data[i][1])])
-    return idxs
-
-
-def get_unique_bounding_box_labels() -> Set[str]:
-    names = set()
-    data = SUNRGBDTrainDataset(False)
-    for i in range(len(data)):
-        names.update([])
-
-
-def get_max_depth_val():
-    """Returns the largest depth value in the trainig dataset to use for scaling depth images [0, 1.0]. Computationally
-    expensive, don't run unless you have to."""
-    data = SUNRGBDTrainDataset(True)
-    return max([data[0][i][-1].flatten().item() for i in range(len(data))])
-
-
-def get_raw_image_sizes() -> set:
-    """Dataset is a collection of several data sources, each with different sizes for their images. This method
-    collects those sizes"""
-    sizes = set()
-    data = SUNRGBDTrainDataset(True, augment=False)
-    for i in range(len(data)):
-        sizes.add(data[i][0].shape)
-    return sizes
-
-
-def compute_training_stats():
-    """Computes the mean and standard deviation for each RGB-D channel from the training data"""
-    means, stds = [], []
-    data = SUNRGBDTrainDataset(True)
-    for i in range(len(data)):
-        print(i)
-        img, _ = data[i]
-        std, mean = t.std_mean(input=img, dim=(1, 2))
-        means.append(mean)
-        stds.append(std)
-    means = t.sum(t.vstack(means), dim=0) / len(means)
-    stds = t.sum(t.vstack(stds), dim=0) / len(stds)
-    print(means, stds)
 
 
 class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
@@ -94,24 +45,31 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         # to load only depth info only
         self.include_depth = depth
 
-        self.tensorer = tvt.ToTensor()
+        self.tensorer = tvt.ToTensor()  # TODO get rid of me
         self.rgb_and_depth_normal = tvt.Normalize(CHANNEL_MEANS, CHANNEL_STDS)
         self.rgb_normal = tvt.Normalize(CHANNEL_MEANS[:3], CHANNEL_STDS[:3])
         self.depth_normal = tvt.Normalize(CHANNEL_MEANS[-1], CHANNEL_STDS[-1])
 
-    def _load_label(self, dirc: pl.Path, semantic: bool):
+    def _load_label(self, dirc: pl.Path, semantic: bool) -> Union[t.Tensor, Tuple[t.Tensor, t.Tensor]]:
         return (self._load_semantic_label if semantic else self._load_bounding_boxes)(dirc)
 
-    def _load_bounding_boxes(self, dirc: pl.Path):
-        bounding_boxes = np.load(dirc.joinpath('bounding_box.npy'), allow_pickle=True)
-        boxes = []
-        box_labels = bounding_boxes[0]['classname']
-        for box in bounding_boxes[0]['gtBb2D']:
+    def _load_bounding_box_info(self, dirc: pl.Path) -> np.ndarray:
+        return np.load(dirc.joinpath('bounding_box.npy'), allow_pickle=True)
+
+    def _load_bounding_boxes(self, dirc: pl.Path) -> Tuple[t.Tensor, t.Tensor]:
+        bbox_info = self._load_bounding_box_info(dirc)
+        bboxes = []
+        bbox_labels = []
+        raw_bboxes = [x for x in bbox_info[0]['gtBb2D']]
+        raw_bbox_labels = [x[0][0] for x in bbox_info[0]['objid']]
+        for idx, box in enumerate(raw_bboxes):
             box = [max(0, round(x)) for x in box[0]]
-            box[2] += box[0]
-            box[3] += box[1]
-            boxes.append(box)
-        return np.array(boxes)
+            # box[2] += box[0]
+            # box[3] += box[1]
+            bboxes.append([box[0], box[1], box[2] + box[0], box[3] + box[1]])
+            bbox_labels.append(raw_bbox_labels[idx])
+
+        return t.as_tensor(bboxes), t.as_tensor(bbox_labels)
 
     def _load_semantic_label(self, dirc: pl.Path):
         return t.as_tensor(self.tensorer(pi.open(dirc.joinpath('semantic_segs.png'))) * 255, dtype=t.long)
@@ -138,7 +96,7 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
     def _get_sample_dirc(self, idx: int) -> pl.Path:
         return self.dircs[idx]
 
-    def __getitem__(self, idx: int):
+    def __getitem__(self, idx: int) -> Union[Tuple[t.Tensor, t.Tensor, t.Tensor], Tuple[t.Tensor, t.Tensor]]:
         sample_dirc = self._get_sample_dirc(idx)
         rgb_img, depth_img = None, None
 
@@ -157,6 +115,10 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
         label = self._load_label(sample_dirc, self.semantic_or_box)
 
+        add_label = None
+        if not self.semantic_or_box:
+            label, add_label = label
+
         # sanity check
         if self.semantic_or_box and (a := img.shape[-2:]) != (b := label.shape[-2:]):
             raise ValueError(f'image and semantic mask have different sizes: {a} vs {b}')
@@ -166,7 +128,10 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         if self.semantic_or_box:
             label = label[0]
 
-        return img, label
+        if self.semantic_or_box:
+            return img, label
+
+        return img, label, add_label
 
     def __len__(self):
         return len(self.dircs)
@@ -269,15 +234,10 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
     def _crop_img(self, img, label):
         cropper_params = self.cropper.get_params(img, INPUT_SHAPE)
         img = tvf.crop(img, *cropper_params)
-
         if self.semantic_or_box:
             label = tvf.crop(label, *cropper_params)
         else:
-            # TODO have no clue why this needs to be done
-            cropper_params = [cropper_params[1],
-                              cropper_params[0],
-                              cropper_params[1] + cropper_params[3],
-                              cropper_params[0] + cropper_params[2]]
+            cropper_params = bb.adjust_torch_crop_params(cropper_params)
             label = bb.bbox_crop(label, *cropper_params)
         return img, label
 
@@ -306,15 +266,12 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         self.cropper = tvt.CenterCrop(INPUT_SHAPE)
 
     def _crop_img(self, img, label):
-        img = self.cropper(img)
+        cropper_params = cc.center_crop(img, list(INPUT_SHAPE))
+        img = tvf.crop(img, *cropper_params)
         if self.semantic_or_box:
-            label = self.cropper(label)
+            label = tvf.crop(label, *cropper_params)
         else:
-            # TODO get cropper params
-            cropper_params = [cropper_params[1],
-                              cropper_params[0],
-                              cropper_params[1] + cropper_params[3],
-                              cropper_params[0] + cropper_params[2]]
+            cropper_params = bb.adjust_torch_crop_params(cropper_params)
             label = bb.bbox_crop(label, *cropper_params)
         return img, label
 
@@ -332,4 +289,5 @@ def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_
 
 if __name__ == '__main__':
     a = SUNRGBDTrainDataset(False)
-    print(a[0])
+    b, c, d = a[0]
+    print(b, c, d)
