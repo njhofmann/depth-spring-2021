@@ -6,6 +6,9 @@ import torch as t
 from src.datasets.sun_rgbd_dataset import SUNRGBDTrainDataset, SUNRGBDTestDataset
 
 
+"""Various utility and inspection methods for the SUN RGBD dataset"""
+
+
 def get_unique_semantic_labels() -> Set[int]:
     """Utility function to check the integers making up semantic images"""
     idxs = set()
@@ -15,11 +18,12 @@ def get_unique_semantic_labels() -> Set[int]:
     return idxs
 
 
-def get_bbox_label_info(class_threshold: int = 300) -> None:
+def bbox_label_info(class_threshold: int = 300) -> None:
     # TODO how many images are lost with this threshold
     ids_to_names = c.defaultdict(lambda: [0, set()])
     ids_to_count = c.Counter()
     data = SUNRGBDTrainDataset(False)
+    empty_img_idxs = []
     for i in range(len(data)):
         try:
             bbox_info = data._load_bounding_box_info(data.dircs[i])
@@ -32,14 +36,33 @@ def get_bbox_label_info(class_threshold: int = 300) -> None:
                 ids_to_count[x] += 1
 
         except IndexError:
-            print(f'element {i} has no boxes')
+            empty_img_idxs.append(i)
 
-    for k, (cnt, labels) in ids_to_names.items():
-        print(k, cnt, len(labels), labels)
+    print(f'class threshold: {class_threshold}')
+    print(f'empty image indices: {empty_img_idxs}')
 
-    remain_counts = list(filter(lambda x: x > class_threshold, ids_to_count.values()))
-    print(f'{len(remain_counts)} classes remain, {sum(remain_counts) / sum(ids_to_count.values())}% bounding boxes remain')
-    print(list(sorted(remain_counts)))
+    # for k, (cnt, labels) in ids_to_names.items():
+    #     print(k, cnt, len(labels), labels)
+
+    remain_counts = [(class_id, count) for class_id, count in ids_to_count.items() if count > class_threshold]
+
+    print(f'{len(remain_counts)} classes remain, '
+          f'{sum(map(lambda x: x[1], remain_counts)) / sum(ids_to_count.values())}% bounding boxes remain')
+    print(list(sorted(remain_counts, key=lambda x: x[1])))
+
+    valid_classes = set(x[0] for x in remain_counts)
+    for i in range(len(data)):
+        try:
+            bbox_info = data._load_bounding_box_info(data.dircs[i])
+            labels = [x[0] for x in bbox_info[0]['classname']]
+
+            if labels and not [x for x in labels if x in valid_classes]:
+                empty_img_idxs.append(i)
+
+        except IndexError:
+            pass
+
+    print(f'{1 - (len(empty_img_idxs) / len(data)):.3f}% of images remaining\n')
 
 
 def get_max_depth_val():
@@ -75,4 +98,5 @@ def compute_training_stats():
 
 
 if __name__ == '__main__':
-    a = get_bbox_label_info()
+    for t in 100, 200, 300, 400, 500, 1000:
+        bbox_label_info(t)

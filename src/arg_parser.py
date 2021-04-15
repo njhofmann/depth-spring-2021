@@ -19,7 +19,7 @@ def init_arg_parser() -> ap.ArgumentParser:
     parser.add_argument('--epochs', '-e', type=int, default=None)
     parser.add_argument('--iterations', '-i', type=int, default=None)
     parser.add_argument('--channels', '-c', type=parse_channels, default='rgbd')
-    parser.add_argument('--seg', '-s', action='store_true', default=True)
+    parser.add_argument('--seg', '-s', action='store_true')
     parser.add_argument('--box', '-b', action='store_true')
     parser.add_argument('--batch_size', '-bs', type=int, default=16)
     parser.add_argument('--iter_eval', '-ie', type=int, default=50,
@@ -27,6 +27,9 @@ def init_arg_parser() -> ap.ArgumentParser:
                              'negative displays & saves nothing')
     parser.add_argument('--model_name', '-mn', type=str, default=None)
     parser.add_argument('--no_augment', '-na', action='store_false', help='to not augment dataset')
+    parser.add_argument('--depth_conv_option', '-dco', type=str, choices=['all', 'start', 'end'], default=None,
+                        help='selection of convolutional operators to replace with depth aware conv operators, '
+                             'model dependent')
     # TODO dataset,
     return parser
 

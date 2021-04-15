@@ -42,6 +42,4 @@ def center_crop(img: t.Tensor, output_size: List[int]) -> Tuple[int, int, int, i
 
     crop_top = int(round((image_height - crop_height) / 2.))
     crop_left = int(round((image_width - crop_width) / 2.))
-    crop_bottom = crop_top + crop_height
-    crop_right = crop_left + crop_width
-    return crop_top, crop_left, crop_bottom, crop_right
+    return crop_top, crop_left, crop_height, crop_width

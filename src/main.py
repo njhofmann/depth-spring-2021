@@ -19,13 +19,6 @@ def get_device():
     return t.device(device)
 
 
-def adjust_scheduler(optimzer: o.Optimizer, iters: int, max_iters: int) -> o.Optimizer:
-    old_lr = optimzer.param_groups[0]['lr']
-    new_lr = max(1e-6, old_lr * ((1 - (iters / max_iters)) ** .9))
-    optimzer.param_groups[0]['lr'] = new_lr
-    return optimzer
-
-
 def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, float]], epoch_path: pl.Path,
                       epoch_losses: List[Tuple[int, float]]) -> None:
     iter_path.parent.mkdir(parents=True, exist_ok=True)
@@ -33,18 +26,17 @@ def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, float]], 
     pd.DataFrame(epoch_losses, columns=['epoch', 'loss']).to_csv(epoch_path, index=False)
 
 
-def eval_model(model: nn.Module, data: td.Dataloader, num_of_classes: int, device) -> None:
+def eval_model(model: nn.Module, data: td.DataLoader, num_of_classes: int, device) -> None:
     with t.no_grad():
         model.eval()
         if segmentation_or_box:
             results = es.eval_seg_model(model, data, num_of_classes, device)
         else:
-            # TODO object detection eval here
             results = ed.eval_detect_model(model, data, device)
         print(results)
 
 
-def train_and_eval(model: nn.Module, train_data: td.Dataloader, test_data: td.Dataloader, device, epochs: Optional[int],
+def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.DataLoader, device, epochs: Optional[int],
                    optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path],
                    iter_eval: int, max_iters: Optional[int]) -> None:
     # either epochs or max_iters is None
@@ -65,21 +57,25 @@ def train_and_eval(model: nn.Module, train_data: td.Dataloader, test_data: td.Da
         running_loss = 0
         print(f'epoch {epoch}')
         # TODO redo training cycle with bounding boxes
-        for i, (channels, seg_mask) in enumerate(train_data):
-            channels, seg_mask = channels.to(device), seg_mask.to(device)
-
-            # zero the parameter gradients
-            optimizer.zero_grad()
-
-            # forward prop + backward prop + optimizer
-            outputs = model(channels)['out']
-            loss = loss_func(outputs, seg_mask)
-            loss.backward()
-            optimizer.step()
+        for i, batch in enumerate(train_data):
+            # zero the parameter gradients, forward prop + backward prop + optimizer
+            if segmentation_or_box:
+                channels, seg_mask = batch
+                channels, seg_mask = channels.to(device), seg_mask.to(device)
+                optimizer.zero_grad()
+                outputs = model(channels)['out']
+                loss = loss_func(outputs, seg_mask)
+                loss.backward()
+                optimizer.step()
+            else:
+                channels, bboxes, bbox_labels = batch
+                channels, bboxes, bbox_labels = channels.to(device), bboxes.to(device), bbox_labels.to(device)
+                losses = model(channels, bboxes, bbox_labels)
+                loss = losses['rcnn']  # TODO avg loss, rcnn loss?
 
             scheduler_count += 1
             iters += 1
-            running_loss += loss.item() * outputs.shape[0]  # avg loss for mini batch * batch size
+            running_loss += loss.item() * batch_size  # avg loss for mini batch * batch size
 
             if iter_eval > 0 and iters % iter_eval == 0:
                 iter_losses.append((iters, loss.item()))
@@ -87,10 +83,6 @@ def train_and_eval(model: nn.Module, train_data: td.Dataloader, test_data: td.Da
 
             if iters >= max_iters:
                 break
-
-            if scheduler_count == 10:
-                scheduler_count = 0
-                # optimizer = adjust_scheduler(optimizer, iters, max_iters)
 
         epoch_loss = running_loss / len(train_data.dataset)
         print(f'epoch {epoch}, epoch loss {epoch_loss}')
@@ -110,16 +102,16 @@ def train_and_eval(model: nn.Module, train_data: td.Dataloader, test_data: td.Da
     save_loss_results(iter_loss_path, iter_losses, epoch_loss_path, epoch_losses)
 
 
-def init_data_loaders(train_set, test_set, batch_size: int, worker_count: int) -> Tuple[td.Dataloader, td.Dataloader]:
+def init_data_loaders(train_set, test_set, batch_size: int, worker_count: int) -> Tuple[td.DataLoader, td.DataLoader]:
     shuffle = True
-    train = td.Dataloader(dataset=train_set,
-                         shuffle=shuffle,
+    train = td.DataLoader(dataset=train_set,
+                          shuffle=shuffle,
+                          num_workers=worker_count,
+                          batch_size=batch_size,
+                          drop_last=True)
+    test = td.DataLoader(dataset=test_set,
                          num_workers=worker_count,
-                         batch_size=batch_size,
-                         drop_last=True)
-    test = td.Dataloader(dataset=test_set,
-                        num_workers=worker_count,
-                        batch_size=batch_size)
+                         batch_size=batch_size)
     return train, test
 
 
@@ -137,9 +129,9 @@ if __name__ == '__main__':
     batch_size = args.batch_size
     worker_count = 4 * t.cuda.device_count()
     train_dataset, test_dataset = d.load_sun_rgbd_dataset(segmentation_or_box=segmentation_or_box,
-                                                           include_rgb=rgb,
-                                                           include_depth=depth,
-                                                           augment=args.no_augment)
+                                                          include_rgb=rgb,
+                                                          include_depth=depth,
+                                                          augment=args.no_augment)
     num_of_classes = train_dataset.CLASS_COUNT
     train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size, worker_count)
 
@@ -154,7 +146,8 @@ if __name__ == '__main__':
                           device=device,
                           num_of_channels=train_dataset.channel_count,
                           model=args.model,
-                          seg_or_box=segmentation_or_box)
+                          seg_or_box=segmentation_or_box,
+                          depth_conv_config=args.depth_conv_option)
 
     ti.summary(model=model, input_size=(batch_size, train_dataset.channel_count, *d.INPUT_SHAPE))
 

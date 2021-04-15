@@ -6,21 +6,16 @@
 1. list of all things to run   
 1. add any thing variable to argparser   
 1. set up object detection pipeline
-   1. add label outputs from model as well
-   1. finish augmentation
-   1. disallow boxes with no boxes
-   1. use classes with only > X samples, filter images
-      1. redo class idx
-   1. figure out id system   
+   1. get to run
+   1. check that the classes gathered by each dataset are the same   
    1. evaluation metrics?
 1. fix runtime warnings
       1. true divide line 30 & 32
 1. set up depth operators
     1. integrate with existing models
-    1. look at paper for extensions   
+    1. come up with configs for each model, link with parsing option   
     1. easily interchangeable with conv2d?
     1. max extension?
-    1. finish setting up
 1. integrate transformer architectures?   
 1. baseline experiments for semantic segmentation and object recognition
 1. get additional datasets set up...?

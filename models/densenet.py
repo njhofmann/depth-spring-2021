@@ -28,6 +28,7 @@ class _DenseLayer(nn.Module):
         drop_rate: float,
         memory_efficient: bool = False
     ) -> None:
+        # TODO conv2d here
         super(_DenseLayer, self).__init__()
         self.norm1: nn.BatchNorm2d
         self.add_module('norm1', nn.BatchNorm2d(num_input_features))
@@ -170,6 +171,7 @@ class DenseNet(nn.Module):
         super(DenseNet, self).__init__()
 
         # First convolution
+        # TODO conv2d here
         self.features = nn.Sequential(OrderedDict([
             ('conv0', nn.Conv2d(input_channels, num_init_features, kernel_size=7, stride=2,
                                 padding=3, bias=False)),
@@ -250,7 +252,7 @@ def _densenet(
     input_channels: int,
     **kwargs: Any
 ) -> DenseNet:
-    model = DenseNet(growth_rate, block_config, num_init_features, input_channels, **kwargs)
+    model = DenseNet(growth_rate, block_config, num_init_features, input_channels=input_channels, **kwargs)
     if pretrained:
         _load_state_dict(model, model_urls[arch], progress)
     return model
