@@ -1,6 +1,7 @@
 from typing import Tuple, Optional
 
 from torch import nn as nn
+import torch as t
 from torchvision.models import _utils as su
 from torchvision.models.segmentation import deeplabv3 as dl
 import torchvision.models.detection as td
@@ -53,7 +54,8 @@ def init_backbone(model: str, channel_cnt: int, depth_conv_option: Optional[str]
     elif model == 'resnet':
         depth_conv_config = get_resnet_depth_conv_config(depth_conv_option)
         in_channel_cnt = 2048
-        base_model = m.resnet(input_channels=channel_cnt, depth_conv_config=depth_conv_config)
+        depth_conv_config = depth_conv_config # TODO add me later
+        base_model = m.resnet(input_channels=channel_cnt)
         return_layers = {'layer4': 'out'}
     elif model == 'densenet':
         depth_conv_config = get_resnet_depth_conv_config(depth_conv_option)
@@ -80,14 +82,18 @@ def init_model(num_of_classes: int, num_of_channels: int, model: str, seg_or_box
         # https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
         anchor_generator = rpn.AnchorGenerator(sizes=((32, 64, 128, 256, 512),),
                                                aspect_ratios=((0.5, 1.0, 2.0),))
-        roi_pooler = to.MultiScaleRoIAlign(featmap_names=[0],
+        roi_pooler = to.MultiScaleRoIAlign(featmap_names=['out'],
                                            output_size=7,
                                            sampling_ratio=2)
         backbone.out_channels = in_channels
+
+        # hack around internal normalization
         model = td.FasterRCNN(backbone=backbone,
                               rpn_anchor_generator=anchor_generator,
                               box_roi_pool=roi_pooler,
-                              num_classes=num_of_classes)
+                              num_classes=num_of_classes,
+                              image_mean=t.Tensor([0. for _ in range(num_of_channels)]),
+                              image_std=t.Tensor([1. for _ in range(num_of_channels)]))
     return model.to(device)
 
 

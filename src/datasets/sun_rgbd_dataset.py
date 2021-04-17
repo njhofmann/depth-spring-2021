@@ -174,6 +174,8 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         if self.semantic_or_box:
             return img, label
 
+        label = t.Tensor(label)
+        add_label = t.LongTensor(add_label)
         return img, label, add_label
 
     def __len__(self):

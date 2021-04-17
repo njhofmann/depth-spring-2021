@@ -29,7 +29,7 @@ def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, float]], 
 def eval_model(model: nn.Module, data: td.DataLoader, num_of_classes: int, device) -> None:
     with t.no_grad():
         model.eval()
-        if segmentation_or_box:
+        if seg_or_bbox:
             results = es.eval_seg_model(model, data, num_of_classes, device)
         else:
             results = ed.eval_detect_model(model, data, device)
@@ -57,9 +57,10 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
         running_loss = 0
         print(f'epoch {epoch}')
         # TODO redo training cycle with bounding boxes
+        model.train()
         for i, batch in enumerate(train_data):
             # zero the parameter gradients, forward prop + backward prop + optimizer
-            if segmentation_or_box:
+            if seg_or_bbox:
                 channels, seg_mask = batch
                 channels, seg_mask = channels.to(device), seg_mask.to(device)
                 optimizer.zero_grad()
@@ -69,8 +70,13 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
                 optimizer.step()
             else:
                 channels, bboxes, bbox_labels = batch
-                channels, bboxes, bbox_labels = channels.to(device), bboxes.to(device), bbox_labels.to(device)
-                losses = model(channels, bboxes, bbox_labels)
+                channels = channels.to(device)
+                for i in range(len(bboxes)):
+                    bboxes[i] = bboxes[i].to(device)
+                    bbox_labels[i] = bbox_labels[i].to(device)
+
+                targets = [{'boxes': bboxes[i], 'labels': bbox_labels[i]} for i in range(len(bboxes))]
+                losses = model(channels, targets)
                 loss = losses['rcnn']  # TODO avg loss, rcnn loss?
 
             scheduler_count += 1
@@ -102,16 +108,39 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
     save_loss_results(iter_loss_path, iter_losses, epoch_loss_path, epoch_losses)
 
 
-def init_data_loaders(train_set, test_set, batch_size: int, worker_count: int) -> Tuple[td.DataLoader, td.DataLoader]:
+def bbox_collate_func(batch):
+    """Since each image may have a different number of bounding boxes, we need a custom collate function that tells how
+    to combine these tensors of different sizes. We use lists
+    :param batch: an iterable of N sets from __getitem__()
+    :return: a tensor of images, lists of varying-size tensors of bounding boxes, labels, and difficulties
+    """
+
+    imgs, bboxes, labels = [], [], []
+    for b in batch:
+        imgs.append(b[0])
+        bboxes.append(b[1])
+        labels.append(b[2])
+
+    images = t.stack(imgs, dim=0)
+    # bboxes = t.Tensor(bboxes)
+    # labels = t.Tensor(labels)
+    return images, bboxes, labels,  # tensor (N, 3, W, H), 3 lists of N tensors each
+
+
+def init_data_loaders(train_set, test_set, batch_size: int, worker_count: int, seg_or_bbox: bool) \
+        -> Tuple[td.DataLoader, td.DataLoader]:
+    collate_func = None if seg_or_bbox else bbox_collate_func
     shuffle = True
     train = td.DataLoader(dataset=train_set,
                           shuffle=shuffle,
                           num_workers=worker_count,
                           batch_size=batch_size,
-                          drop_last=True)
+                          drop_last=True,
+                          collate_fn=collate_func)
     test = td.DataLoader(dataset=test_set,
                          num_workers=worker_count,
-                         batch_size=batch_size)
+                         batch_size=batch_size,
+                         collate_fn=collate_func)
     return train, test
 
 
@@ -125,20 +154,20 @@ def create_model_save_path(model_name: Optional[str]) -> Optional[pl.Path]:
 if __name__ == '__main__':
     args = apr.get_user_args()
     rgb, depth = args.channels
-    segmentation_or_box = args.seg
+    seg_or_bbox = args.seg
     batch_size = args.batch_size
     worker_count = 4 * t.cuda.device_count()
-    train_dataset, test_dataset = d.load_sun_rgbd_dataset(segmentation_or_box=segmentation_or_box,
+    train_dataset, test_dataset = d.load_sun_rgbd_dataset(segmentation_or_box=seg_or_bbox,
                                                           include_rgb=rgb,
                                                           include_depth=depth,
                                                           augment=args.no_augment)
     num_of_classes = train_dataset.CLASS_COUNT
-    train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size, worker_count)
+    train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size, worker_count, seg_or_bbox)
 
     save_model = create_model_save_path(args.model_name)
 
     loss_func = None
-    if segmentation_or_box:
+    if seg_or_bbox:
         loss_func = nn.CrossEntropyLoss()
 
     device = get_device()
@@ -146,7 +175,7 @@ if __name__ == '__main__':
                           device=device,
                           num_of_channels=train_dataset.channel_count,
                           model=args.model,
-                          seg_or_box=segmentation_or_box,
+                          seg_or_box=seg_or_bbox,
                           depth_conv_config=args.depth_conv_option)
 
     ti.summary(model=model, input_size=(batch_size, train_dataset.channel_count, *d.INPUT_SHAPE))
