@@ -32,10 +32,12 @@ def box_area(box: Tuple[int, int, int, int]) -> int:
 
 
 def is_box_visible(old_box: Tuple[int, int, int, int], new_box: Tuple[int, int, int, int], visibility: float) -> bool:
+    # TODO redo visibility
     return box_area(old_box) > (box_area(new_box) * visibility)
 
 
-def bbox_crop(bboxes: np.ndarray, min_x: int, min_y: int, max_x: int, max_y: int, visibility: float = .5) -> np.ndarray:
+def bbox_crop(bboxes: np.ndarray, bbox_labels: np.ndarray, min_x: int, min_y: int, max_x: int, max_y: int,
+              visibility: float = 0.0) -> Tuple[np.ndarray, np.ndarray]:
     def crop(x1, y1, x2, y2) -> Optional[Tuple[int, int, int, int]]:
         if x1 >= max_x or y1 >= max_y or x2 <= min_x or y2 <= min_y:
             return None
@@ -46,7 +48,9 @@ def bbox_crop(bboxes: np.ndarray, min_x: int, min_y: int, max_x: int, max_y: int
         return new_x1, new_y1, new_x2, new_y2
 
     new_bboxes = []
-    for box in bboxes:
+    new_labels = []
+    for i, box in enumerate(bboxes):
         if (new_box := crop(*box)) is not None and is_box_visible(box, new_box, visibility):
             new_bboxes.append(new_box)
-    return np.array(new_bboxes)
+            new_labels.append(bbox_labels[i])
+    return np.array(new_bboxes), np.array(new_labels)

@@ -1,9 +1,11 @@
 import pathlib as pl
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Dict, Union
 import math as m
+import collections as c
 
 import pandas as pd
 import torch as t
+import torch.cuda
 import torch.nn as nn
 import torch.optim as o
 import torch.utils.data as td
@@ -19,11 +21,20 @@ def get_device():
     return t.device(device)
 
 
-def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, float]], epoch_path: pl.Path,
-                      epoch_losses: List[Tuple[int, float]]) -> None:
+def separate_loss_info(loss_info: List[Tuple[int, Dict[str, float]]]) -> Tuple[List[str], List[Tuple[Union[int, float]]]]:
+    cols = list(loss_info[0][1].keys())
+    losses = [(step, *[losses[col] for col in cols]) for step, losses in loss_info]
+    return cols, losses
+
+def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, Dict[str, float]]], epoch_path: pl.Path,
+                      epoch_losses: List[Tuple[int, Dict[str, float]]]) -> None:
     iter_path.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame(iter_losses, columns=['iteration', 'loss']).to_csv(iter_path, index=False)
-    pd.DataFrame(epoch_losses, columns=['epoch', 'loss']).to_csv(epoch_path, index=False)
+
+    iter_cols, iter_data = separate_loss_info(iter_losses)
+    pd.DataFrame(iter_data, columns=['iteration', *iter_cols]).to_csv(iter_path, index=False)
+
+    epoch_cols, epoch_data = separate_loss_info(epoch_losses)
+    pd.DataFrame(epoch_data, columns=['epoch', *epoch_cols]).to_csv(epoch_path, index=False)
 
 
 def eval_model(model: nn.Module, data: td.DataLoader, num_of_classes: int, device) -> None:
@@ -47,14 +58,14 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
         epochs = m.ceil(max_iters / m.floor(len(train_data.dataset) / batch_size))
 
     iter_losses = []
-    epoch_losses = []
-    scheduler_count, iters = 0, 0
+    cum_losses = []
+    iters = 0
     for epoch in range(epochs):
 
         if iters >= max_iters:
             break
 
-        running_loss = 0
+        running_loss = c.Counter()
         print(f'epoch {epoch}')
         # TODO redo training cycle with bounding boxes
         model.train()
@@ -68,6 +79,8 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
                 loss = loss_func(outputs, seg_mask)
                 loss.backward()
                 optimizer.step()
+                losses = {'loss': loss.item()}
+                running_loss['loss'] += loss.item() * batch_size
             else:
                 channels, bboxes, bbox_labels = batch
                 channels = channels.to(device)
@@ -75,24 +88,33 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
                     bboxes[i] = bboxes[i].to(device)
                     bbox_labels[i] = bbox_labels[i].to(device)
 
+                print(bboxes)
                 targets = [{'boxes': bboxes[i], 'labels': bbox_labels[i]} for i in range(len(bboxes))]
+                print(targets)
+                torch.cuda.empty_cache()
                 losses = model(channels, targets)
-                loss = losses['rcnn']  # TODO avg loss, rcnn loss?
+                losses = {'classifier loss': losses['loss_classifier'].item(),
+                          'box regression loss': losses['loss_box_reg'].item(),
+                          'objectness loss': losses['loss_objectness'].item(),
+                          'rpn box regression loss': losses['loss_rpn_box_reg']}
 
-            scheduler_count += 1
+                for k, v in losses.items():
+                    running_loss[k] += v
+
             iters += 1
-            running_loss += loss.item() * batch_size  # avg loss for mini batch * batch size
+            # running_loss += loss.item() * batch_size  # avg loss for mini batch * batch size
 
             if iter_eval > 0 and iters % iter_eval == 0:
-                iter_losses.append((iters, loss.item()))
-                print(f'iteration: {iters}, loss: {loss}')
+                iter_losses.append((iters, losses))
+                print(f'iteration: {iters}, ' + ', '.join([f'{k}: {v}' for k, v in losses.items()]))
 
             if iters >= max_iters:
                 break
 
-        epoch_loss = running_loss / len(train_data.dataset)
-        print(f'epoch {epoch}, epoch loss {epoch_loss}')
-        epoch_losses.append((epoch, epoch_loss))
+        # epoch_loss = running_loss / len(train_data.dataset)
+        epoch_losses = {k: v / len(train_data.dataset) for k, v in running_loss.items()}
+        print(f'epoch {epoch}, ' + ', '.join([f'{k}: {v}' for k, v in epoch_losses.items()]))
+        cum_losses.append((epoch, epoch_losses))
 
     eval_model(model, train_data, num_of_classes, device)
     eval_model(model, test_data, num_of_classes, device)
@@ -105,7 +127,7 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
         epoch_loss_path = p.RESULTS_DIRC.joinpath(f'{model_name}_epoch_results.csv')
         t.save(model.state_dict(), save_model)
 
-    save_loss_results(iter_loss_path, iter_losses, epoch_loss_path, epoch_losses)
+    save_loss_results(iter_loss_path, iter_losses, epoch_loss_path, cum_losses)
 
 
 def bbox_collate_func(batch):

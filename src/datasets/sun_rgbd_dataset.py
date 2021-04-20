@@ -15,7 +15,7 @@ import torchvision.transforms.functional as tvf
 import paths as p
 from src.datasets import custom_center_crop as cc, bbox_augments as bb
 
-INPUT_SHAPE = (425, 560)
+INPUT_SHAPE = (300, 300) #(425, 560)
 MAX_DEPTH = 65400  # from training data
 CHANNEL_MEANS = t.tensor([0.4902, 0.4525, 0.4251, 0.2519])
 CHANNEL_STDS = t.tensor([0.2512, 0.2564, 0.2581, 0.1227])
@@ -50,7 +50,9 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         self.include_depth = depth
 
         # indices for samples that contain the supported bbox classes
-        self.bbox_indces, self.bbox_classes = self._set_bbox_info(bbox_cls_threshold, bbox_classes)
+        self.bbox_indces, self.bbox_classes = None, None
+        if not self.semantic_or_box:
+            self.bbox_indces, self.bbox_classes = self._set_bbox_info(bbox_cls_threshold, bbox_classes)
 
         self.tensorer = tvt.ToTensor()  # TODO get rid of me
         self.rgb_and_depth_normal = tvt.Normalize(CHANNEL_MEANS, CHANNEL_STDS)
@@ -158,10 +160,6 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
         label = self._load_label(sample_dirc, self.semantic_or_box)
 
-        add_label = None
-        if not self.semantic_or_box:
-            label, add_label = label
-
         # sanity check
         if self.semantic_or_box and (a := img.shape[-2:]) != (b := label.shape[-2:]):
             raise ValueError(f'image and semantic mask have different sizes: {a} vs {b}')
@@ -174,9 +172,11 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         if self.semantic_or_box:
             return img, label
 
-        label = t.Tensor(label)
-        add_label = t.LongTensor(add_label)
-        return img, label, add_label
+        bboxes = t.Tensor(label[0])
+        bbox_labels = t.LongTensor(label[1])
+        if len(bboxes) != len(bbox_labels):
+            raise ValueError(f'{len(label)} {len(bbox_labels)}')
+        return img, bboxes, bbox_labels
 
     def __len__(self):
         return len(self.dircs if self.semantic_or_box else self.bbox_indces)
@@ -268,7 +268,9 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
             if self.semantic_or_box:
                 label = tvf.vflip(label)
             else:
-                label = bb.bbox_vflip(label, img.shape[-2])
+                bboxes, labels = label
+                bboxes = bb.bbox_vflip(bboxes, img.shape[-2])
+                label = bboxes, labels
 
         if self._random_select():
             img = tvf.hflip(img)
@@ -276,7 +278,9 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
             if self.semantic_or_box:
                 label = tvf.hflip(label)
             else:
-                label = bb.bbox_hflip(label, img.shape[-1])
+                bboxes, labels = label
+                bboxes = bb.bbox_hflip(bboxes, img.shape[-1])
+                label = bboxes, labels
 
         return img, label
 
@@ -287,7 +291,7 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
             label = tvf.crop(label, *cropper_params)
         else:
             cropper_params = bb.adjust_torch_crop_params(cropper_params)
-            label = bb.bbox_crop(label, *cropper_params)
+            label = bb.bbox_crop(*label, *cropper_params)
         return img, label
 
     def _jitter_img(self, img, label):
@@ -321,7 +325,7 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
             label = tvf.crop(label, *cropper_params)
         else:
             cropper_params = bb.adjust_torch_crop_params(cropper_params)
-            label = bb.bbox_crop(label, *cropper_params)
+            label = bb.bbox_crop(*label, *cropper_params)
         return img, label
 
     def _apply_augments(self, img, label):
@@ -343,4 +347,6 @@ def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_
 
 if __name__ == '__main__':
     a = SUNRGBDTrainDataset(False)
-    a.view_raw_img(1003)
+    a[0]
+    for i in range(len(a)):
+        print(a[i])
