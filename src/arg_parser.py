@@ -16,7 +16,8 @@ def parse_channels(arg: str) -> Tuple[bool, bool]:
 
 def init_arg_parser() -> ap.ArgumentParser:
     parser = ap.ArgumentParser()
-    parser.add_argument('--model', '-m', default='vgg', help='model to use as a feature extractor')
+    parser.add_argument('--model', '-m', default='vgg', choices=['vgg', 'alexnet', 'resnet', 'dense'],
+                        help='model to use as a feature extractor')
     parser.add_argument('--epochs', '-e', type=int, default=None, help='number of epochs to train on')
     parser.add_argument('--iterations', '-i', type=int, default=None)
     parser.add_argument('--channels', '-c', type=parse_channels, default='rgbd',

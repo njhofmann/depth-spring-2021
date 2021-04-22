@@ -200,7 +200,7 @@ if __name__ == '__main__':
                           depth_conv_alpha=args.alpha)
 
     # does not work for multi-gpu models
-    if args.depth_conv_option is None:
+    if seg_or_bbox and args.depth_conv_option is None:
         ti.summary(model=model.backbone, input_size=(batch_size, train_dataset.channel_count, *d.INPUT_SHAPE))
 
     iter_eval = args.iter_eval

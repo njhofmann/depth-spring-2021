@@ -61,6 +61,9 @@ def init_backbone(model: str, channel_cnt: int, depth_conv_alpha: float,
         in_channel_cnt = 1664
         base_model = m.densenet(input_channels=channel_cnt, depth_conv_config=depth_conv_config)
         return_layers = {'features': 'out'}
+    elif model == 'alexnet':
+        backbone = m.alexnet(depth_conv_option=depth_conv_option, depth_conv_alpha=depth_conv_alpha)
+        return backbone, 256
     else:
         raise ValueError(f'model {model} is an unsupported model')
 
