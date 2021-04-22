@@ -3,15 +3,13 @@ import torch.nn as nn
 
 import depth_conv_ops
 from models.utils import load_state_dict_from_url
-from typing import Union, List, Dict, Any, cast
+from typing import Union, List, Dict, Any, cast, Optional
 import depth_conv_ops.depthaware.models.ops.depthconv.module as dc
-
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
     'vgg19_bn', 'vgg19',
 ]
-
 
 model_urls = {
     'vgg11': 'https://download.pytorch.org/models/vgg11-bbd30ac9.pth',
@@ -28,10 +26,10 @@ model_urls = {
 class VGG(nn.Module):
 
     def __init__(
-        self,
-        features: nn.Module,
-        num_classes: int = 1000,
-        init_weights: bool = True
+            self,
+            features: nn.Module,
+            num_classes: int = 1000,
+            init_weights: bool = True
     ) -> None:
         super(VGG, self).__init__()
         self.features = features
@@ -50,9 +48,9 @@ class VGG(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.features(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.classifier(x)
+        # x = self.avgpool(x)
+        # x = torch.flatten(x, 1)
+        # x = self.classifier(x)
         return x
 
     def _initialize_weights(self) -> None:
@@ -69,21 +67,20 @@ class VGG(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
 
-def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channels: int = 3) -> nn.Sequential:
+def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channels: int = 3,
+                depth_conv_alpha: float = 8.3) -> nn.Sequential:
     layers: List[nn.Module] = []
-    # in_channels = 1
     for v in cfg:
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
         else:
-            if isinstance(v, str) and v[:-2] == '-D':
-                conv = dc.DepthConv
-                v = v[-2:]
+            if isinstance(v, str) and v[-1] == 'C':
+                v = cast(int, v[:-1])
+                conv2d = dc.DepthConv(in_channels, v, kernel_size=3, padding=1, alpha=depth_conv_alpha)
             else:
-                conv = nn.Conv2d
-            v = cast(int, v)
-            # TODO depth conv layer here
-            conv2d = conv(in_channels, v, kernel_size=3, padding=1)
+                v = cast(int, v)
+                conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+
             if batch_norm:
                 layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
             else:
@@ -97,13 +94,19 @@ cfgs: Dict[str, List[Union[str, int]]] = {
     'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
     'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
+    'D-all': ['64C', '64C', 'M', '128C', '128C', 'M', '256C', '256C', '256C', 'M', '512C', '512C', '512C', 'M', '512C',
+              '512C', '512C', 'M'],
+    'D-front': ['64C', '64C', 'M', '128C', '128C', 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
+    'D-back': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', '512C', '512C', '512C', 'M']
 }
 
 
-def _vgg(arch: str, cfg: str, batch_norm: bool, pretrained: bool, progress: bool, in_channels=3, **kwargs: Any) -> VGG:
+def _vgg(arch: str, cfg: str, batch_norm: bool, pretrained: bool, progress: bool, in_channels: int = 3,
+         depth_conv_alpha: float = 8.3, **kwargs: Any) -> VGG:
     if pretrained:
         kwargs['init_weights'] = False
-    model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm, in_channels=in_channels), **kwargs)
+    model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm, in_channels=in_channels,
+                            depth_conv_alpha=depth_conv_alpha), **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch],
                                               progress=progress)
@@ -155,7 +158,8 @@ def vgg13_bn(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> 
     return _vgg('vgg13_bn', 'B', True, pretrained, progress, **kwargs)
 
 
-def vgg16(pretrained: bool = False, progress: bool = True, in_channels: int = 3, **kwargs: Any) -> VGG:
+def vgg16(pretrained: bool = False, progress: bool = True, in_channels: int = 3,
+          depth_conv_option: Optional[str] = None, depth_conv_alpha: float = 8.3, **kwargs: Any) -> VGG:
     r"""VGG 16-layer model (configuration "D")
     `"Very Deep Convolutional Networks For Large-Scale Image Recognition" <https://arxiv.org/pdf/1409.1556.pdf>`._
 
@@ -163,7 +167,17 @@ def vgg16(pretrained: bool = False, progress: bool = True, in_channels: int = 3,
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         progress (bool): If True, displays a progress bar of the download to stderr
     """
-    return _vgg('vgg16', 'D', False, pretrained, progress, in_channels, **kwargs)
+    if depth_conv_option is None:
+        cfg = 'D'
+    elif depth_conv_option == 'all':
+        cfg = 'D-all'
+    elif depth_conv_option == 'front':
+        cfg = 'D-front'
+    elif depth_conv_option == 'back':
+        cfg = 'D-back'
+    else:
+        raise ValueError(f'{depth_conv_option} is not supported')
+    return _vgg('vgg16', cfg, False, pretrained, progress, in_channels, depth_conv_alpha=depth_conv_alpha, **kwargs)
 
 
 def vgg16_bn(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> VGG:
