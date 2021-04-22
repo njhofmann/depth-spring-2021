@@ -1,7 +1,10 @@
 import torch
 import torch.nn as nn
+
+import depth_conv_ops
 from models.utils import load_state_dict_from_url
 from typing import Union, List, Dict, Any, cast
+import depth_conv_ops.depthaware.models.ops.depthconv.module as dc
 
 
 __all__ = [
@@ -73,9 +76,14 @@ def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channel
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
         else:
+            if isinstance(v, str) and v[:-2] == '-D':
+                conv = dc.DepthConv
+                v = v[-2:]
+            else:
+                conv = nn.Conv2d
             v = cast(int, v)
             # TODO depth conv layer here
-            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+            conv2d = conv(in_channels, v, kernel_size=3, padding=1)
             if batch_norm:
                 layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
             else:

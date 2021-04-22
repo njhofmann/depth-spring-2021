@@ -15,7 +15,7 @@ import torchvision.transforms.functional as tvf
 import paths as p
 from src.datasets import custom_center_crop as cc, bbox_augments as bb
 
-INPUT_SHAPE = (300, 300) #(425, 560)
+INPUT_SHAPE = (425, 560)
 MAX_DEPTH = 65400  # from training data
 CHANNEL_MEANS = t.tensor([0.4902, 0.4525, 0.4251, 0.2519])
 CHANNEL_STDS = t.tensor([0.2512, 0.2564, 0.2581, 0.1227])
@@ -284,15 +284,24 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 
         return img, label
 
-    def _crop_img(self, img, label):
-        cropper_params = self.cropper.get_params(img, INPUT_SHAPE)
-        img = tvf.crop(img, *cropper_params)
+    def _crop_img(self, img, label, cropper_params: Optional[Tuple[int, int, int, int]] = None):
+        # TODO abstract this out
+        if cropper_params is None:
+            cropper_params = self.cropper.get_params(img, INPUT_SHAPE)
+
+        new_img = tvf.crop(img, *cropper_params)
         if self.semantic_or_box:
-            label = tvf.crop(label, *cropper_params)
+            new_label = tvf.crop(label, *cropper_params)
         else:
             cropper_params = bb.adjust_torch_crop_params(cropper_params)
-            label = bb.bbox_crop(*label, *cropper_params)
-        return img, label
+            new_label = bb.bbox_crop(*label, *cropper_params)
+
+            # if crop results in no bounding boxes, try again
+            # TODO move this to a utility checker function before any actual cropping
+            if len(new_label[0]) == 0:
+                return self._crop_img(img, label)
+
+        return new_img, new_label
 
     def _jitter_img(self, img, label):
         if self.include_rgb and self._random_select(.5):
@@ -346,7 +355,5 @@ def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_
 
 
 if __name__ == '__main__':
-    a = SUNRGBDTrainDataset(False)
-    a[0]
-    for i in range(len(a)):
-        print(a[i])
+    a = SUNRGBDTrainDataset(True)
+    print(a[0][0].shape)

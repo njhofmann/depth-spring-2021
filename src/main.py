@@ -15,16 +15,22 @@ from src import arg_parser as apr, init_model as im, eval_seg_model as es, eval_
 import torchinfo as ti
 
 
-def get_device():
-    device = 'cuda' if t.cuda.is_available() else 'cpu'
+def get_and_set_default_device(default_gpu: int):
+    if t.cuda.is_available():
+        torch.cuda.set_device(default_gpu)
+        device = 'cuda'
+    else:
+        device = 'cpu'
     print(f'using {device}')
     return t.device(device)
 
 
-def separate_loss_info(loss_info: List[Tuple[int, Dict[str, float]]]) -> Tuple[List[str], List[Tuple[Union[int, float]]]]:
+def separate_loss_info(loss_info: List[Tuple[int, Dict[str, float]]]) \
+        -> Tuple[List[str], List[Tuple[Union[int, float]]]]:
     cols = list(loss_info[0][1].keys())
     losses = [(step, *[losses[col] for col in cols]) for step, losses in loss_info]
     return cols, losses
+
 
 def save_loss_results(iter_path: pl.Path, iter_losses: List[Tuple[int, Dict[str, float]]], epoch_path: pl.Path,
                       epoch_losses: List[Tuple[int, Dict[str, float]]]) -> None:
@@ -48,14 +54,19 @@ def eval_model(model: nn.Module, data: td.DataLoader, num_of_classes: int, devic
 
 
 def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.DataLoader, device, epochs: Optional[int],
-                   optimizer: o.Optimizer, loss_func: nn.Module, num_of_classes: int, save_model: Optional[pl.Path],
-                   iter_eval: int, max_iters: Optional[int]) -> None:
+                   num_of_classes: int, save_model: Optional[pl.Path], iter_eval: int, max_iters: Optional[int]) -> None:
     # either epochs or max_iters is None
     if max_iters is None:
         max_iters = epochs * (m.floor(len(train_data.dataset) / batch_size))
 
     if epochs is None:
         epochs = m.ceil(max_iters / m.floor(len(train_data.dataset) / batch_size))
+
+    if seg_or_bbox:
+        optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=.0004)
+        loss_func = nn.CrossEntropyLoss()
+    else:
+        optimizer, loss_func = None, None
 
     iter_losses = []
     cum_losses = []
@@ -76,6 +87,7 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
                 channels, seg_mask = channels.to(device), seg_mask.to(device)
                 optimizer.zero_grad()
                 outputs = model(channels)['out']
+
                 loss = loss_func(outputs, seg_mask)
                 loss.backward()
                 optimizer.step()
@@ -88,10 +100,7 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
                     bboxes[i] = bboxes[i].to(device)
                     bbox_labels[i] = bbox_labels[i].to(device)
 
-                print(bboxes)
                 targets = [{'boxes': bboxes[i], 'labels': bbox_labels[i]} for i in range(len(bboxes))]
-                print(targets)
-                torch.cuda.empty_cache()
                 losses = model(channels, targets)
                 losses = {'classifier loss': losses['loss_classifier'].item(),
                           'box regression loss': losses['loss_box_reg'].item(),
@@ -132,21 +141,13 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
 
 def bbox_collate_func(batch):
     """Since each image may have a different number of bounding boxes, we need a custom collate function that tells how
-    to combine these tensors of different sizes. We use lists
+    to combine these tensors of different sizes.
     :param batch: an iterable of N sets from __getitem__()
-    :return: a tensor of images, lists of varying-size tensors of bounding boxes, labels, and difficulties
+    :return: a tensor of images, lists of varying-size tensors of bounding boxes and their class labels
     """
-
-    imgs, bboxes, labels = [], [], []
-    for b in batch:
-        imgs.append(b[0])
-        bboxes.append(b[1])
-        labels.append(b[2])
-
+    imgs, bboxes, bbox_labels = list(zip(*batch))
     images = t.stack(imgs, dim=0)
-    # bboxes = t.Tensor(bboxes)
-    # labels = t.Tensor(labels)
-    return images, bboxes, labels,  # tensor (N, 3, W, H), 3 lists of N tensors each
+    return images, list(bboxes), list(bbox_labels),  # tensor (N, 3, W, H), 3 lists of N tensors each
 
 
 def init_data_loaders(train_set, test_set, batch_size: int, worker_count: int, seg_or_bbox: bool) \
@@ -179,6 +180,7 @@ if __name__ == '__main__':
     seg_or_bbox = args.seg
     batch_size = args.batch_size
     worker_count = 4 * t.cuda.device_count()
+    depth_conv_option = args.depth_conv_option
     train_dataset, test_dataset = d.load_sun_rgbd_dataset(segmentation_or_box=seg_or_bbox,
                                                           include_rgb=rgb,
                                                           include_depth=depth,
@@ -188,27 +190,23 @@ if __name__ == '__main__':
 
     save_model = create_model_save_path(args.model_name)
 
-    loss_func = None
-    if seg_or_bbox:
-        loss_func = nn.CrossEntropyLoss()
-
-    device = get_device()
+    device = get_and_set_default_device(args.set_device)
     model = im.init_model(num_of_classes=train_dataset.CLASS_COUNT,
                           device=device,
                           num_of_channels=train_dataset.channel_count,
                           model=args.model,
                           seg_or_box=seg_or_bbox,
-                          depth_conv_config=args.depth_conv_option)
+                          depth_conv_config=depth_conv_option,
+                          depth_conv_alpha=args.alpha)
 
-    ti.summary(model=model, input_size=(batch_size, train_dataset.channel_count, *d.INPUT_SHAPE))
+    # does not work for multi-gpu models
+    if args.depth_conv_option is None:
+        ti.summary(model=model.backbone, input_size=(batch_size, train_dataset.channel_count, *d.INPUT_SHAPE))
 
-    optimizer = o.SGD(model.parameters(), lr=.001, momentum=.9, weight_decay=.0004)
     iter_eval = args.iter_eval
     train_and_eval(model=model,
                    epochs=args.epochs,
                    max_iters=args.iterations,
-                   optimizer=optimizer,
-                   loss_func=loss_func,
                    train_data=train_data,
                    test_data=test_data,
                    device=device,

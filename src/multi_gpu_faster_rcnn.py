@@ -2,6 +2,7 @@ from typing import Tuple, List
 from collections import OrderedDict
 import torch
 import warnings
+import torch.nn as nn
 
 from torchvision.models import detection as td
 
@@ -42,7 +43,7 @@ class MultiGPUFasterRCNN(td.FasterRCNN):
                                                  rpn_bg_iou_thresh=rpn_bg_iou_thresh,
                                                  rpn_batch_size_per_image=rpn_batch_size_per_image,
                                                  rpn_positive_fraction=rpn_positive_fraction,
-                                                 rpn_score_thresh=rpn_score_thresh,
+                                                 #rpn_score_thresh=rpn_score_thresh,
                                                  # Box parameters
                                                  box_roi_pool=box_roi_pool, box_head=box_head,
                                                  box_predictor=box_predictor,
@@ -54,10 +55,15 @@ class MultiGPUFasterRCNN(td.FasterRCNN):
                                                  box_positive_fraction=box_positive_fraction,
                                                  bbox_reg_weights=bbox_reg_weights)
 
-        self.transform = self.transform('cuda:0')
-        self.backbone = self.backbone.to('cuda:0')
+        self.backbone = self.backbone
+        backbone_layers = list(self.backbone.children())
+        backbone_mid = round(len(backbone_layers) / 2)
+        self.backbone_front = nn.Sequential(*backbone_layers[:backbone_mid]).to('cuda:2')
+        self.backbone_end = nn.Sequential(*backbone_layers[backbone_mid:]).to('cuda:3')
+
+        self.transform = self.transform.to('cuda:0')
         self.rpn = self.rpn.to('cuda:1')
-        self.roi_heads = self.roi_heads('cuda:1')
+        self.roi_heads = self.roi_heads.to('cuda:1')
 
     def forward(self, images, targets=None):
         # type: (List[Tensor], Optional[List[Dict[str, Tensor]]]) -> Tuple[Dict[str, Tensor], List[Dict[str, Tensor]]]
@@ -108,9 +114,18 @@ class MultiGPUFasterRCNN(td.FasterRCNN):
                                      " Found invalid box {} for target at index {}."
                                      .format(degen_bb, target_idx))
 
-        features = self.backbone(images.tensors).to('cuda:1')
+        features = self.backbone_end(self.backbone_front(images.tensors.to('cuda:2')).to('cuda:3'))#.items()
+
         if isinstance(features, torch.Tensor):
-            features = OrderedDict([('0', features)])
+            features = OrderedDict([('out', features.to('cuda:1'))])
+        else:
+            features = {k: v.to('cuda:1') for k, v in features}
+
+        images = images.to('cuda:1')
+
+        if targets:
+            targets = [{k: v.to('cuda:1') for k, v in target.items()} for target in targets]
+
         proposals, proposal_losses = self.rpn(images, features, targets)
         detections, detector_losses = self.roi_heads(features, proposals, images.image_sizes, targets)
         detections = self.transform.postprocess(detections, images.image_sizes, original_image_sizes)
@@ -126,3 +141,11 @@ class MultiGPUFasterRCNN(td.FasterRCNN):
             return losses, detections
         else:
             return self.eager_outputs(losses, detections)
+
+
+def mem_info(device):
+    t = torch.cuda.get_device_properties(device).total_memory
+    r = torch.cuda.memory_reserved(device)
+    a = torch.cuda.memory_allocated(device)
+    f = r - a  # free inside reserved
+    print(t, r, a, f)
