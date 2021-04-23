@@ -3,6 +3,7 @@ import torch.nn as nn
 from .utils import load_state_dict_from_url
 from typing import Any, Optional, List, Tuple, Union
 import depth_conv_ops.depthaware.models.ops.depthconv.module as dc
+import models.utils as mu
 
 __all__ = ['AlexNet', 'alexnet']
 
@@ -24,50 +25,75 @@ class AlexNet(nn.Module):
 
     def __init__(self, num_classes: int = 1000, in_channels: int = 3, depth_conv_alpha: float = 8.3,
                  depth_convs: Tuple[bool, bool, bool, bool, bool] = None) -> None:
+        super(AlexNet, self).__init__()
+        self.has_depth_conv = any(depth_convs)
         self.conv1 = conv(in_channels, 64, kernel_size=11, stride=4, padding=2, depth_conv=depth_convs[0],
                           depth_conv_alpha=depth_conv_alpha)
+        self.relu1 = nn.ReLU(inplace=True)
+        self.max_pool_2d_1 = nn.MaxPool2d(kernel_size=3, stride=2)
         self.conv2 = conv(64, 192, kernel_size=5, padding=2, depth_conv=depth_convs[1],
                           depth_conv_alpha=depth_conv_alpha)
+        self.relu2 = nn.ReLU(inplace=True)
+        self.max_pool_2d_2 = nn.MaxPool2d(kernel_size=3, stride=2)
         self.conv3 = conv(192, 384, kernel_size=3, padding=1, depth_conv=depth_convs[2],
                           depth_conv_alpha=depth_conv_alpha)
+        self.relu3 = nn.ReLU(inplace=True)
+
         self.conv4 = conv(384, 256, kernel_size=3, padding=1, depth_conv=depth_convs[3],
                           depth_conv_alpha=depth_conv_alpha)
+        self.relu4 = nn.ReLU(inplace=True)
         self.conv5 = conv(256, 256, kernel_size=3, padding=1, depth_conv=depth_convs[4],
                           depth_conv_alpha=depth_conv_alpha)
+        self.relu5 = nn.ReLU(inplace=True)
+        self.max_pool_2d_3 = nn.MaxPool2d(kernel_size=3, stride=2)
+        self.depth_down_sampler = nn.AvgPool2d(3, stride=2) if self.has_depth_conv else None
 
-        super(AlexNet, self).__init__()
-        self.features = nn.Sequential(
-            self.conv1,
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            self.conv2,
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-            self.conv3,
-            nn.ReLU(inplace=True),
-            self.conv4,
-            nn.ReLU(inplace=True),
-            self.conv5,
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=3, stride=2),
-        )
-        self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
-        self.classifier = nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(256 * 6 * 6, 4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout(),
-            nn.Linear(4096, 4096),
-            nn.ReLU(inplace=True),
-            nn.Linear(4096, num_classes),
-        )
+        # self.features = nn.Sequential(
+        #     self.conv1,
+        #     nn.ReLU(inplace=True),
+        #     nn.MaxPool2d(kernel_size=3, stride=2),
+        #     self.conv2,
+        #     nn.ReLU(inplace=True),
+        #     nn.MaxPool2d(kernel_size=3, stride=2),
+        #     self.conv3,
+        #     nn.ReLU(inplace=True),
+        #     self.conv4,
+        #     nn.ReLU(inplace=True),
+        #     self.conv5,
+        #     nn.ReLU(inplace=True),
+        #     nn.MaxPool2d(kernel_size=3, stride=2),
+        # )
+        # self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
+        # self.classifier = nn.Sequential(
+        #     nn.Dropout(),
+        #     nn.Linear(256 * 6 * 6, 4096),
+        #     nn.ReLU(inplace=True),
+        #     nn.Dropout(),
+        #     nn.Linear(4096, 4096),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(4096, num_classes),
+        # )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = self.features(x)
+        # TODO add depth into forward
+        x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
+        x = mu.forward_conv(x, depth, self.conv1, self.has_depth_conv, self.depth_down_sampler)
+        x = self.relu1(x)
+        x = self.max_pool_2d_1(x)
+        x = mu.forward_conv(x, depth, self.conv2, self.has_depth_conv, self.depth_down_sampler)
+        x = self.relu2(x)
+        x = self.max_pool_2d_2(x)
+        x = mu.forward_conv(x, depth, self.conv3, self.has_depth_conv, self.depth_down_sampler)
+        x = self.relu3(x)
+        x = mu.forward_conv(x, depth, self.conv4, self.has_depth_conv, self.depth_down_sampler)
+        x = self.relu4(x)
+        x = mu.forward_conv(x, depth, self.conv5, self.has_depth_conv, self.depth_down_sampler)
+        x = self.relu5(x)
+        x = self.max_pool_2d_3(x)
         # x = self.avgpool(x)
         # x = torch.flatten(x, 1)
         # x = self.classifier(x)
-        return x
+        return {'out': x}  # change me
 
 
 def alexnet(pretrained: bool = False, progress: bool = True, in_channels: int = 3,

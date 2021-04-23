@@ -2,6 +2,7 @@ import torch
 from torch import Tensor
 import torch.nn as nn
 from models.utils import load_state_dict_from_url
+import models.utils as mu
 from typing import Type, Any, Callable, Union, List, Optional, Tuple
 import depth_conv_ops.depthaware.models.ops.depthconv.module as dc
 
@@ -140,28 +141,19 @@ class Bottleneck(nn.Module):
             return None
         return nn.AvgPool2d(3, padding=1, stride=2)
 
-    def _forward_conv(self, x: Tensor, depth: Optional[Tensor], conv: Union[dc.DepthConv, nn.Conv2d]) -> Tensor:
-        # downscale depth until same shape
-        while self.depth_conv and depth.shape[-2:] != x.shape[-2:]:
-            depth = self.conv1_depth_avger(depth)
-
-        if self.depth_conv and depth is not None:
-            return conv(x, depth)
-        return conv(x)
-
     def forward(self, x: Tuple[Tensor, Optional[Tensor]]) -> Tuple[Tensor, Optional[Tensor]]:
         x, depth = x
         identity = x
 
-        out = self._forward_conv(x, depth, self.conv1)
+        out = mu.forward_conv(x, depth, self.conv1, self.depth_conv, self.conv1_depth_avger)
         out = self.bn1(out)
         out = self.relu(out)
 
-        out = self._forward_conv(out, depth, self.conv2)
+        out = mu.forward_conv(out, depth, self.conv2, self.depth_conv, self.conv2_depth_avger)
         out = self.bn2(out)
         out = self.relu(out)
 
-        out = self._forward_conv(out, depth, self.conv3)
+        out = mu.forward_conv(out, depth, self.conv3, self.depth_conv, self.conv3_depth_avger)
         out = self.bn3(out)
 
         if self.downsample is not None:
@@ -283,11 +275,7 @@ class ResNet(nn.Module):
 
     def _forward_impl(self, x: Tensor, depth: Optional[Tensor] = None) -> Tensor:
         # See note [TorchScript super()]
-        # if using depth convs, separate info
-        if self.has_depth_conv and x.shape[1] == 4:
-            depth = x[:, 3, :, :]
-            depth = depth[:, None, :, :]  # [batch_sz, h, w] --> [batch_sz, dummy_dim, h, w]
-            x = x[:, 0:3, :, :]
+        x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
 
         x = self.conv1(x)
         x = self.bn1(x)

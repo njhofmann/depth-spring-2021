@@ -29,29 +29,33 @@ class VGG(nn.Module):
             self,
             features: nn.Module,
             num_classes: int = 1000,
-            init_weights: bool = True
+            init_weights: bool = True,
+            has_depth_conv: bool = False
     ) -> None:
         super(VGG, self).__init__()
+        self.has_depth_conv = has_depth_conv
+        self.depth_down_sampler = nn.AvgPool2d(2, stride=2) if self.has_depth_conv else None
         self.features = features
-        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
-        self.classifier = nn.Sequential(
-            nn.Linear(512 * 7 * 7, 4096),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(4096, 4096),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(4096, num_classes),
-        )
+        # self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
+        # self.classifier = nn.Sequential(
+        #     nn.Linear(512 * 7 * 7, 4096),
+        #     nn.ReLU(True),
+        #     nn.Dropout(),
+        #     nn.Linear(4096, 4096),
+        #     nn.ReLU(True),
+        #     nn.Dropout(),
+        #     nn.Linear(4096, num_classes),
+        # )
         if init_weights:
             self._initialize_weights()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # TODO redo as iteration over layers
         x = self.features(x)
         # x = self.avgpool(x)
         # x = torch.flatten(x, 1)
         # x = self.classifier(x)
-        return x
+        return {'out': x} # TODO redo me
 
     def _initialize_weights(self) -> None:
         for m in self.modules():
@@ -69,6 +73,7 @@ class VGG(nn.Module):
 
 def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channels: int = 3,
                 depth_conv_alpha: float = 8.3) -> nn.Sequential:
+    # TODO add depth into forward
     layers: List[nn.Module] = []
     for v in cfg:
         if v == 'M':
