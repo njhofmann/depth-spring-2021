@@ -3,7 +3,8 @@ import torch.nn as nn
 
 import depth_conv_ops
 from models.utils import load_state_dict_from_url
-from typing import Union, List, Dict, Any, cast, Optional
+import models.utils as mu
+from typing import Union, List, Dict, Any, cast, Optional, Tuple
 import depth_conv_ops.depthaware.models.ops.depthconv.module as dc
 
 __all__ = [
@@ -50,8 +51,13 @@ class VGG(nn.Module):
             self._initialize_weights()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # TODO redo as iteration over layers
-        x = self.features(x)
+        x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
+        for layer in self.features.children():
+            if isinstance(layer, dc.DepthConv):
+                x = mu.forward_conv(x, depth, layer, self.has_depth_conv, self.depth_down_sampler)
+            else:
+                x = layer(x)
+        # x = self.features(x)
         # x = self.avgpool(x)
         # x = torch.flatten(x, 1)
         # x = self.classifier(x)
@@ -72,15 +78,17 @@ class VGG(nn.Module):
 
 
 def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channels: int = 3,
-                depth_conv_alpha: float = 8.3) -> nn.Sequential:
-    # TODO add depth into forward
+                depth_conv_alpha: float = 8.3) -> Tuple[nn.Sequential, bool]:
     layers: List[nn.Module] = []
+    has_depth_conv = False
     for v in cfg:
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
         else:
             if isinstance(v, str) and v[-1] == 'C':
                 v = cast(int, v[:-1])
+                v = int(v)
+                has_depth_conv = True
                 conv2d = dc.DepthConv(in_channels, v, kernel_size=3, padding=1, alpha=depth_conv_alpha)
             else:
                 v = cast(int, v)
@@ -91,7 +99,7 @@ def make_layers(cfg: List[Union[str, int]], batch_norm: bool = False, in_channel
             else:
                 layers += [conv2d, nn.ReLU(inplace=True)]
             in_channels = v
-    return nn.Sequential(*layers)
+    return nn.Sequential(*layers), has_depth_conv
 
 
 cfgs: Dict[str, List[Union[str, int]]] = {
@@ -110,8 +118,9 @@ def _vgg(arch: str, cfg: str, batch_norm: bool, pretrained: bool, progress: bool
          depth_conv_alpha: float = 8.3, **kwargs: Any) -> VGG:
     if pretrained:
         kwargs['init_weights'] = False
-    model = VGG(make_layers(cfgs[cfg], batch_norm=batch_norm, in_channels=in_channels,
-                            depth_conv_alpha=depth_conv_alpha), **kwargs)
+    features, has_depth_conv = make_layers(cfgs[cfg], batch_norm=batch_norm, in_channels=in_channels,
+                                           depth_conv_alpha=depth_conv_alpha)
+    model = VGG(features=features, has_depth_conv=has_depth_conv, **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls[arch],
                                               progress=progress)

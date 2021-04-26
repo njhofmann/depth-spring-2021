@@ -46,7 +46,7 @@ def get_user_args() -> ap.Namespace:
         raise ValueError('can only select segmentation or bounding box')
 
     if (user_args.epochs is None) == (user_args.iterations is None):
-        raise ValueError('can only select epochs and iterations')
+        raise ValueError('can only select one of epochs and iterations')
 
     if user_args.channels != (True, True) and user_args.depth_conv_option is not None:
         raise ValueError(f'can only use rgbd channels with depth convolutions')

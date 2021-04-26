@@ -12,32 +12,6 @@ import models as m
 import src.multi_gpu_faster_rcnn as mg
 
 
-def base_depth_conv_config(option: str, start_config: dict, end_config: dict, all_config: dict) -> dict:
-    if option == 'all':
-        return all_config
-    elif option == 'start':
-        return start_config
-    elif option == 'end':
-        return end_config
-    elif option is None:
-        return None
-    raise ValueError(f'{option} is an invalid depth convolutional option')
-
-
-def get_vgg_depth_conv_config(option: str) -> dict:
-    return base_depth_conv_config(option,
-                                  all_config=None,
-                                  start_config=None,
-                                  end_config=None)
-
-
-def get_densenet_depth_conv_config(option: str) -> dict:
-    return base_depth_conv_config(option,
-                                  all_config=None,
-                                  start_config=None,
-                                  end_config=None)
-
-
 def init_backbone(model: str, channel_cnt: int, depth_conv_alpha: float,
                   depth_conv_option: Optional[str] = None) -> Tuple[nn.Module, int]:
     # rgbd data will be split into rgb and depth data
@@ -45,22 +19,22 @@ def init_backbone(model: str, channel_cnt: int, depth_conv_alpha: float,
         channel_cnt = 3
 
     if model == 'vgg':
-        depth_conv_config = get_vgg_depth_conv_config(depth_conv_option)
-        depth_conv_config = depth_conv_config  # TODO add me later
-        base_model = m.vgg(pretrained=False, in_channels=channel_cnt)
         in_channel_cnt = 512
-        return_layers = {'features': 'out'}
+        base_model = m.vgg(in_channels=channel_cnt,
+                           depth_conv_option=depth_conv_option,
+                           depth_conv_alpha=depth_conv_alpha)
+        return base_model, in_channel_cnt
     elif model == 'resnet':
         in_channel_cnt = 2048
         model = m.resnet(input_channels=channel_cnt,
                          depth_conv_option=depth_conv_option,
                          depth_conv_alpha=depth_conv_alpha)
         return model, in_channel_cnt
-    elif model == 'densenet':
-        depth_conv_config = get_densenet_depth_conv_config(depth_conv_option)
-        in_channel_cnt = 1664
-        base_model = m.densenet(input_channels=channel_cnt, depth_conv_config=depth_conv_config)
-        return_layers = {'features': 'out'}
+    # elif model == 'densenet':
+    #     depth_conv_config = get_densenet_depth_conv_config(depth_conv_option)
+    #     in_channel_cnt = 1664
+    #     base_model = m.densenet(input_channels=channel_cnt, depth_conv_config=depth_conv_config)
+    #     return_layers = {'features': 'out'}
     elif model == 'alexnet':
         backbone = m.alexnet(depth_conv_option=depth_conv_option, depth_conv_alpha=depth_conv_alpha)
         return backbone, 256
