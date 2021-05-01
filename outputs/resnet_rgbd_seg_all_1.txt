@@ -1,0 +1,3069 @@
+using cuda
+ResNet(
+  (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+  (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (relu): ReLU(inplace=True)
+  (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+  (layer1): Sequential(
+    (0): Bottleneck(
+      (conv1): DepthConv'>(64, 64, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(64, 64, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(64, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): DepthConv'>(256, 64, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(64, 64, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(64, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): DepthConv'>(256, 64, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(64, 64, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(64, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (layer2): Sequential(
+    (0): Bottleneck(
+      (conv1): DepthConv'>(256, 128, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(128, 128, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(2, 2),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(128, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): DepthConv'>(512, 128, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(128, 128, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(128, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): DepthConv'>(512, 128, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(128, 128, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(128, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (3): Bottleneck(
+      (conv1): DepthConv'>(512, 128, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(128, 128, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(128, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (layer3): Sequential(
+    (0): Bottleneck(
+      (conv1): DepthConv'>(512, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(256, 256, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(2, 2),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(256, 1024, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(512, 1024, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): DepthConv'>(1024, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(256, 256, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(256, 1024, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): DepthConv'>(1024, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(256, 256, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(256, 1024, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (3): Bottleneck(
+      (conv1): DepthConv'>(1024, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(256, 256, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(256, 1024, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (4): Bottleneck(
+      (conv1): DepthConv'>(1024, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(256, 256, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(256, 1024, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (5): Bottleneck(
+      (conv1): DepthConv'>(1024, 256, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(256, 256, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(256, 1024, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (layer4): Sequential(
+    (0): Bottleneck(
+      (conv1): DepthConv'>(1024, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(512, 512, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(2, 2),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(512, 2048, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(1024, 2048, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): DepthConv'>(2048, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(512, 512, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(512, 2048, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): DepthConv'>(2048, 512, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv1_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): DepthConv'>(512, 512, kernel_size=(3, 3), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(1, 1), bias=None)
+      (conv2_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): DepthConv'>(512, 2048, kernel_size=(1, 1), alpha=8.3,dilation=(1, 1), stride=(1, 1),padding=(0, 0), bias=None)
+      (conv3_depth_avger): AvgPool2d(kernel_size=3, stride=2, padding=1)
+      (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+  (fc): Linear(in_features=2048, out_features=1000, bias=True)
+)
+epoch 0
+iteration: 50, loss: 2.6446964740753174
+iteration: 100, loss: 2.4710519313812256
+iteration: 150, loss: 1.8820058107376099
+iteration: 200, loss: 3.2692599296569824
+iteration: 250, loss: 2.398017406463623
+iteration: 300, loss: 2.4975643157958984
+iteration: 350, loss: 1.9521405696868896
+iteration: 400, loss: 2.258382797241211
+iteration: 450, loss: 2.1031270027160645
+iteration: 500, loss: 2.4944753646850586
+iteration: 550, loss: 2.2287280559539795
+iteration: 600, loss: 2.2326254844665527
+iteration: 650, loss: 1.9028816223144531
+iteration: 700, loss: 2.3520190715789795
+iteration: 750, loss: 2.265700578689575
+iteration: 800, loss: 2.005455255508423
+iteration: 850, loss: 1.9016331434249878
+iteration: 900, loss: 2.1782217025756836
+iteration: 950, loss: 2.9272210597991943
+iteration: 1000, loss: 2.4196882247924805
+iteration: 1050, loss: 2.1772682666778564
+iteration: 1100, loss: 1.9000380039215088
+iteration: 1150, loss: 2.3101842403411865
+iteration: 1200, loss: 1.8316998481750488
+iteration: 1250, loss: 1.9869043827056885
+iteration: 1300, loss: 1.72842276096344
+epoch 0, loss: 2.194871009602903
+epoch 1
+iteration: 1350, loss: 1.7067654132843018
+iteration: 1400, loss: 2.1434669494628906
+iteration: 1450, loss: 2.065342664718628
+iteration: 1500, loss: 1.9105771780014038
+iteration: 1550, loss: 2.103332757949829
+iteration: 1600, loss: 2.5211687088012695
+iteration: 1650, loss: 2.0799708366394043
+iteration: 1700, loss: 2.2375307083129883
+iteration: 1750, loss: 1.8479751348495483
+iteration: 1800, loss: 1.685678482055664
+iteration: 1850, loss: 2.102998733520508
+iteration: 1900, loss: 2.073993682861328
+iteration: 1950, loss: 1.705629825592041
+iteration: 2000, loss: 2.7476460933685303
+iteration: 2050, loss: 2.3319106101989746
+iteration: 2100, loss: 1.9173345565795898
+iteration: 2150, loss: 1.8557159900665283
+iteration: 2200, loss: 1.827338457107544
+iteration: 2250, loss: 2.205207109451294
+iteration: 2300, loss: 1.6791810989379883
+iteration: 2350, loss: 1.9344311952590942
+iteration: 2400, loss: 2.146540880203247
+iteration: 2450, loss: 2.1447813510894775
+iteration: 2500, loss: 2.0700531005859375
+iteration: 2550, loss: 1.7697399854660034
+iteration: 2600, loss: 1.6490521430969238
+epoch 1, loss: 2.025340277221593
+epoch 2
+iteration: 2650, loss: 2.628901720046997
+iteration: 2700, loss: 2.0993189811706543
+iteration: 2750, loss: 1.6679567098617554
+iteration: 2800, loss: 2.319606065750122
+iteration: 2850, loss: 2.3994877338409424
+iteration: 2900, loss: 2.5495777130126953
+iteration: 2950, loss: 2.4850172996520996
+iteration: 3000, loss: 1.9863392114639282
+iteration: 3050, loss: 1.7409085035324097
+iteration: 3100, loss: 1.9616039991378784
+iteration: 3150, loss: 1.8199952840805054
+iteration: 3200, loss: 2.1441128253936768
+iteration: 3250, loss: 1.8265225887298584
+iteration: 3300, loss: 1.7402222156524658
+iteration: 3350, loss: 1.5902841091156006
+iteration: 3400, loss: 2.062638759613037
+iteration: 3450, loss: 1.946613073348999
+iteration: 3500, loss: 2.59853458404541
+iteration: 3550, loss: 1.5763167142868042
+iteration: 3600, loss: 1.9271304607391357
+iteration: 3650, loss: 2.415069818496704
+iteration: 3700, loss: 2.048992872238159
+iteration: 3750, loss: 1.8216943740844727
+iteration: 3800, loss: 2.048072576522827
+iteration: 3850, loss: 2.228973627090454
+iteration: 3900, loss: 1.9099078178405762
+iteration: 3950, loss: 2.146014451980591
+epoch 2, loss: 1.9592544954456919
+epoch 3
+iteration: 4000, loss: 1.6547554731369019
+iteration: 4050, loss: 1.5355075597763062
+iteration: 4100, loss: 1.4443387985229492
+iteration: 4150, loss: 2.5995283126831055
+iteration: 4200, loss: 2.2775461673736572
+iteration: 4250, loss: 1.6240196228027344
+iteration: 4300, loss: 1.8503628969192505
+iteration: 4350, loss: 2.4918997287750244
+iteration: 4400, loss: 2.415449619293213
+iteration: 4450, loss: 1.5390561819076538
+iteration: 4500, loss: 2.232539176940918
+iteration: 4550, loss: 1.7532438039779663
+iteration: 4600, loss: 2.0535712242126465
+iteration: 4650, loss: 2.0999526977539062
+iteration: 4700, loss: 1.6074039936065674
+iteration: 4750, loss: 2.2276217937469482
+iteration: 4800, loss: 1.8502100706100464
+iteration: 4850, loss: 1.290127158164978
+iteration: 4900, loss: 1.8737202882766724
+iteration: 4950, loss: 1.6127620935440063
+iteration: 5000, loss: 1.8984888792037964
+iteration: 5050, loss: 1.5705459117889404
+iteration: 5100, loss: 1.914442777633667
+iteration: 5150, loss: 1.6828128099441528
+iteration: 5200, loss: 1.5312949419021606
+iteration: 5250, loss: 2.119948625564575
+epoch 3, loss: 1.915564722279501
+epoch 4
+iteration: 5300, loss: 1.5888649225234985
+iteration: 5350, loss: 1.618192195892334
+iteration: 5400, loss: 1.3332093954086304
+iteration: 5450, loss: 2.007474184036255
+iteration: 5500, loss: 1.817281723022461
+iteration: 5550, loss: 1.6978678703308105
+iteration: 5600, loss: 1.6401333808898926
+iteration: 5650, loss: 1.8823806047439575
+iteration: 5700, loss: 2.0123186111450195
+iteration: 5750, loss: 1.6920751333236694
+iteration: 5800, loss: 1.4780900478363037
+iteration: 5850, loss: 2.4220941066741943
+iteration: 5900, loss: 1.880745768547058
+iteration: 5950, loss: 1.9886449575424194
+iteration: 6000, loss: 2.088712692260742
+iteration: 6050, loss: 1.7525516748428345
+iteration: 6100, loss: 1.649794340133667
+iteration: 6150, loss: 1.8525809049606323
+iteration: 6200, loss: 1.3131303787231445
+iteration: 6250, loss: 1.7629687786102295
+iteration: 6300, loss: 2.130652904510498
+iteration: 6350, loss: 1.8509340286254883
+iteration: 6400, loss: 1.7284125089645386
+iteration: 6450, loss: 1.6467252969741821
+iteration: 6500, loss: 1.9316881895065308
+iteration: 6550, loss: 1.7531843185424805
+iteration: 6600, loss: 1.5013004541397095
+epoch 4, loss: 1.8740687607591064
+epoch 5
+iteration: 6650, loss: 2.4152309894561768
+iteration: 6700, loss: 2.302398204803467
+iteration: 6750, loss: 2.7164838314056396
+iteration: 6800, loss: 1.5710281133651733
+iteration: 6850, loss: 1.9223769903182983
+iteration: 6900, loss: 1.9692224264144897
+iteration: 6950, loss: 1.838117003440857
+iteration: 7000, loss: 1.4281703233718872
+iteration: 7050, loss: 1.7202495336532593
+iteration: 7100, loss: 1.3841662406921387
+iteration: 7150, loss: 2.0718085765838623
+iteration: 7200, loss: 1.3918040990829468
+iteration: 7250, loss: 1.4766700267791748
+iteration: 7300, loss: 1.7342803478240967
+iteration: 7350, loss: 1.6339037418365479
+iteration: 7400, loss: 1.8592787981033325
+iteration: 7450, loss: 1.7103029489517212
+iteration: 7500, loss: 1.880143165588379
+iteration: 7550, loss: 1.6342740058898926
+iteration: 7600, loss: 1.767082929611206
+iteration: 7650, loss: 1.4996581077575684
+iteration: 7700, loss: 1.5899274349212646
+iteration: 7750, loss: 1.899946928024292
+iteration: 7800, loss: 1.6676830053329468
+iteration: 7850, loss: 1.3094041347503662
+iteration: 7900, loss: 1.4133415222167969
+epoch 5, loss: 1.8459079303037702
+epoch 6
+iteration: 7950, loss: 1.8974051475524902
+iteration: 8000, loss: 2.369159698486328
+iteration: 8050, loss: 1.433052659034729
+iteration: 8100, loss: 2.1047825813293457
+iteration: 8150, loss: 1.7057137489318848
+iteration: 8200, loss: 1.6748173236846924
+iteration: 8250, loss: 1.4142868518829346
+iteration: 8300, loss: 2.0153305530548096
+iteration: 8350, loss: 1.6186096668243408
+iteration: 8400, loss: 1.519989013671875
+iteration: 8450, loss: 1.9261845350265503
+iteration: 8500, loss: 2.229400634765625
+iteration: 8550, loss: 1.915804386138916
+iteration: 8600, loss: 1.5932320356369019
+iteration: 8650, loss: 1.2778353691101074
+iteration: 8700, loss: 1.8291898965835571
+iteration: 8750, loss: 1.2565991878509521
+iteration: 8800, loss: 1.4377895593643188
+iteration: 8850, loss: 1.6922757625579834
+iteration: 8900, loss: 1.6103739738464355
+iteration: 8950, loss: 2.066728115081787
+iteration: 9000, loss: 2.2761430740356445
+iteration: 9050, loss: 1.7797653675079346
+iteration: 9100, loss: 1.9770363569259644
+iteration: 9150, loss: 1.993194341659546
+iteration: 9200, loss: 2.2495622634887695
+epoch 6, loss: 1.8313427260154356
+epoch 7
+iteration: 9250, loss: 1.9502263069152832
+iteration: 9300, loss: 2.077662467956543
+iteration: 9350, loss: 1.6382893323898315
+iteration: 9400, loss: 1.496101975440979
+iteration: 9450, loss: 2.0126473903656006
+iteration: 9500, loss: 1.3419699668884277
+iteration: 9550, loss: 1.8062756061553955
+iteration: 9600, loss: 1.6409369707107544
+iteration: 9650, loss: 2.1835947036743164
+iteration: 9700, loss: 1.4961744546890259
+iteration: 9750, loss: 2.0056018829345703
+iteration: 9800, loss: 1.5674842596054077
+iteration: 9850, loss: 2.37725567817688
+iteration: 9900, loss: 1.4051817655563354
+iteration: 9950, loss: 1.3124399185180664
+iteration: 10000, loss: 1.9172859191894531
+iteration: 10050, loss: 1.3098077774047852
+iteration: 10100, loss: 1.3761532306671143
+iteration: 10150, loss: 1.6911530494689941
+iteration: 10200, loss: 1.7766814231872559
+iteration: 10250, loss: 1.998661994934082
+iteration: 10300, loss: 1.8149099349975586
+iteration: 10350, loss: 1.7752132415771484
+iteration: 10400, loss: 1.5469592809677124
+iteration: 10450, loss: 1.814615249633789
+iteration: 10500, loss: 2.0184326171875
+iteration: 10550, loss: 1.8654752969741821
+epoch 7, loss: 1.8045290410123913
+epoch 8
+iteration: 10600, loss: 1.4581409692764282
+iteration: 10650, loss: 1.6315782070159912
+iteration: 10700, loss: 1.7899969816207886
+iteration: 10750, loss: 1.570895791053772
+iteration: 10800, loss: 1.7954808473587036
+iteration: 10850, loss: 1.5514905452728271
+iteration: 10900, loss: 2.5534000396728516
+iteration: 10950, loss: 1.6246466636657715
+iteration: 11000, loss: 1.1703886985778809
+iteration: 11050, loss: 1.670287013053894
+iteration: 11100, loss: 1.7528495788574219
+iteration: 11150, loss: 1.8941549062728882
+iteration: 11200, loss: 1.4048582315444946
+iteration: 11250, loss: 1.7864612340927124
+iteration: 11300, loss: 1.7218408584594727
+iteration: 11350, loss: 2.1842544078826904
+iteration: 11400, loss: 1.391626238822937
+iteration: 11450, loss: 2.013087749481201
+iteration: 11500, loss: 1.663915991783142
+iteration: 11550, loss: 1.528344988822937
+iteration: 11600, loss: 1.931820034980774
+iteration: 11650, loss: 1.5427440404891968
+iteration: 11700, loss: 1.8716984987258911
+iteration: 11750, loss: 1.6074914932250977
+iteration: 11800, loss: 2.263026475906372
+iteration: 11850, loss: 2.311842918395996
+epoch 8, loss: 1.785071682095415
+epoch 9
+iteration: 11900, loss: 1.8631768226623535
+iteration: 11950, loss: 1.996476650238037
+iteration: 12000, loss: 1.433646321296692
+iteration: 12050, loss: 1.5051696300506592
+iteration: 12100, loss: 1.913154125213623
+iteration: 12150, loss: 1.563210129737854
+iteration: 12200, loss: 1.6074724197387695
+iteration: 12250, loss: 1.5821094512939453
+iteration: 12300, loss: 2.1037731170654297
+iteration: 12350, loss: 2.1180195808410645
+iteration: 12400, loss: 2.080460548400879
+iteration: 12450, loss: 1.946486473083496
+iteration: 12500, loss: 1.9244612455368042
+iteration: 12550, loss: 1.7706297636032104
+iteration: 12600, loss: 1.4236749410629272
+iteration: 12650, loss: 1.7578216791152954
+iteration: 12700, loss: 1.8456363677978516
+iteration: 12750, loss: 1.5948437452316284
+iteration: 12800, loss: 1.7555309534072876
+iteration: 12850, loss: 1.5708301067352295
+iteration: 12900, loss: 1.946848750114441
+iteration: 12950, loss: 2.5058298110961914
+iteration: 13000, loss: 1.6596370935440063
+iteration: 13050, loss: 1.5781121253967285
+iteration: 13100, loss: 1.6954443454742432
+iteration: 13150, loss: 1.494703769683838
+iteration: 13200, loss: 1.9589093923568726
+epoch 9, loss: 1.7709035166052003
+epoch 10
+iteration: 13250, loss: 1.13510262966156
+iteration: 13300, loss: 1.9744375944137573
+iteration: 13350, loss: 1.8912075757980347
+iteration: 13400, loss: 1.6068238019943237
+iteration: 13450, loss: 1.574758529663086
+iteration: 13500, loss: 1.5471245050430298
+iteration: 13550, loss: 1.5260404348373413
+iteration: 13600, loss: 1.5687332153320312
+iteration: 13650, loss: 1.8081997632980347
+iteration: 13700, loss: 1.5482208728790283
+iteration: 13750, loss: 1.422606110572815
+iteration: 13800, loss: 1.7441625595092773
+iteration: 13850, loss: 1.304348349571228
+iteration: 13900, loss: 1.6789695024490356
+iteration: 13950, loss: 1.9668952226638794
+iteration: 14000, loss: 1.8985735177993774
+iteration: 14050, loss: 1.7019811868667603
+iteration: 14100, loss: 1.536027193069458
+iteration: 14150, loss: 1.4815038442611694
+iteration: 14200, loss: 1.8310127258300781
+iteration: 14250, loss: 1.6999651193618774
+iteration: 14300, loss: 1.585289478302002
+iteration: 14350, loss: 1.4510632753372192
+iteration: 14400, loss: 1.8982030153274536
+iteration: 14450, loss: 1.7865465879440308
+iteration: 14500, loss: 2.0061240196228027
+epoch 10, loss: 1.7666195090356138
+epoch 11
+iteration: 14550, loss: 1.5847930908203125
+iteration: 14600, loss: 1.5919017791748047
+iteration: 14650, loss: 2.0390427112579346
+iteration: 14700, loss: 1.6940875053405762
+iteration: 14750, loss: 1.689591407775879
+iteration: 14800, loss: 1.8082431554794312
+iteration: 14850, loss: 1.5837923288345337
+iteration: 14900, loss: 1.919743299484253
+iteration: 14950, loss: 1.6782445907592773
+iteration: 15000, loss: 1.2385413646697998
+iteration: 15050, loss: 1.902190923690796
+iteration: 15100, loss: 1.8078235387802124
+iteration: 15150, loss: 2.1767024993896484
+iteration: 15200, loss: 1.8630239963531494
+iteration: 15250, loss: 1.268514633178711
+iteration: 15300, loss: 1.8394230604171753
+iteration: 15350, loss: 1.8895360231399536
+iteration: 15400, loss: 2.196028709411621
+iteration: 15450, loss: 1.6772127151489258
+iteration: 15500, loss: 2.619675874710083
+iteration: 15550, loss: 2.090097188949585
+iteration: 15600, loss: 1.919533610343933
+iteration: 15650, loss: 1.7420412302017212
+iteration: 15700, loss: 1.6531394720077515
+iteration: 15750, loss: 1.8435808420181274
+iteration: 15800, loss: 2.19467830657959
+iteration: 15850, loss: 1.5588899850845337
+epoch 11, loss: 1.7428351369801849
+epoch 12
+iteration: 15900, loss: 1.7251207828521729
+iteration: 15950, loss: 1.6453938484191895
+iteration: 16000, loss: 1.7893575429916382
+iteration: 16050, loss: 1.5383440256118774
+iteration: 16100, loss: 1.645970344543457
+iteration: 16150, loss: 1.3888617753982544
+iteration: 16200, loss: 1.547227144241333
+iteration: 16250, loss: 2.114924430847168
+iteration: 16300, loss: 1.505893349647522
+iteration: 16350, loss: 1.961375117301941
+iteration: 16400, loss: 1.9706798791885376
+iteration: 16450, loss: 1.8520126342773438
+iteration: 16500, loss: 1.2857356071472168
+iteration: 16550, loss: 1.6461501121520996
+iteration: 16600, loss: 1.6804248094558716
+iteration: 16650, loss: 1.9428731203079224
+iteration: 16700, loss: 1.3984326124191284
+iteration: 16750, loss: 1.7984269857406616
+iteration: 16800, loss: 1.7395920753479004
+iteration: 16850, loss: 1.5654677152633667
+iteration: 16900, loss: 1.691333532333374
+iteration: 16950, loss: 1.5754209756851196
+iteration: 17000, loss: 1.34787917137146
+iteration: 17050, loss: 1.6240826845169067
+iteration: 17100, loss: 1.9220316410064697
+iteration: 17150, loss: 1.858499526977539
+epoch 12, loss: 1.7309280913397176
+epoch 13
+iteration: 17200, loss: 1.5386000871658325
+iteration: 17250, loss: 1.4828566312789917
+iteration: 17300, loss: 1.8719944953918457
+iteration: 17350, loss: 1.9873253107070923
+iteration: 17400, loss: 1.6425843238830566
+iteration: 17450, loss: 1.3773972988128662
+iteration: 17500, loss: 1.5854204893112183
+iteration: 17550, loss: 1.518419623374939
+iteration: 17600, loss: 1.6331591606140137
+iteration: 17650, loss: 1.6219260692596436
+iteration: 17700, loss: 1.7906850576400757
+iteration: 17750, loss: 1.774515986442566
+iteration: 17800, loss: 1.8870137929916382
+iteration: 17850, loss: 1.4551644325256348
+iteration: 17900, loss: 1.502294898033142
+iteration: 17950, loss: 1.3714313507080078
+iteration: 18000, loss: 1.7711493968963623
+iteration: 18050, loss: 1.8618474006652832
+iteration: 18100, loss: 2.0300850868225098
+iteration: 18150, loss: 1.2755666971206665
+iteration: 18200, loss: 1.8795260190963745
+iteration: 18250, loss: 1.2265254259109497
+iteration: 18300, loss: 1.8139417171478271
+iteration: 18350, loss: 1.6935480833053589
+iteration: 18400, loss: 1.87266206741333
+iteration: 18450, loss: 1.3552477359771729
+epoch 13, loss: 1.720759040720641
+epoch 14
+iteration: 18500, loss: 1.5406969785690308
+iteration: 18550, loss: 1.5691826343536377
+iteration: 18600, loss: 1.470898985862732
+iteration: 18650, loss: 1.6158841848373413
+iteration: 18700, loss: 2.0857863426208496
+iteration: 18750, loss: 1.6853018999099731
+iteration: 18800, loss: 1.715326189994812
+iteration: 18850, loss: 1.3296881914138794
+iteration: 18900, loss: 1.2677830457687378
+iteration: 18950, loss: 2.153428554534912
+iteration: 19000, loss: 1.8178856372833252
+iteration: 19050, loss: 2.1150784492492676
+iteration: 19100, loss: 1.9388854503631592
+iteration: 19150, loss: 1.6469495296478271
+iteration: 19200, loss: 1.8523781299591064
+iteration: 19250, loss: 1.7390486001968384
+iteration: 19300, loss: 1.3670849800109863
+iteration: 19350, loss: 1.7602252960205078
+iteration: 19400, loss: 1.7153993844985962
+iteration: 19450, loss: 1.5251384973526
+iteration: 19500, loss: 1.90555739402771
+iteration: 19550, loss: 1.7090823650360107
+iteration: 19600, loss: 1.3462660312652588
+iteration: 19650, loss: 1.8992581367492676
+iteration: 19700, loss: 1.9466434717178345
+iteration: 19750, loss: 1.4970895051956177
+iteration: 19800, loss: 2.141838312149048
+epoch 14, loss: 1.7049705540107576
+epoch 15
+iteration: 19850, loss: 1.8175814151763916
+iteration: 19900, loss: 1.500400185585022
+iteration: 19950, loss: 2.072755813598633
+iteration: 20000, loss: 1.683117389678955
+iteration: 20050, loss: 1.4260023832321167
+iteration: 20100, loss: 1.8016170263290405
+iteration: 20150, loss: 1.2594047784805298
+iteration: 20200, loss: 1.7013556957244873
+iteration: 20250, loss: 2.089693069458008
+iteration: 20300, loss: 1.9748609066009521
+iteration: 20350, loss: 1.6453510522842407
+iteration: 20400, loss: 1.55970299243927
+iteration: 20450, loss: 1.5203890800476074
+iteration: 20500, loss: 1.7753931283950806
+iteration: 20550, loss: 1.9269510507583618
+iteration: 20600, loss: 1.2070268392562866
+iteration: 20650, loss: 2.4261581897735596
+iteration: 20700, loss: 1.5079346895217896
+iteration: 20750, loss: 2.3173158168792725
+iteration: 20800, loss: 1.2869938611984253
+iteration: 20850, loss: 1.545351505279541
+iteration: 20900, loss: 1.689233660697937
+iteration: 20950, loss: 1.5712368488311768
+iteration: 21000, loss: 1.6141362190246582
+iteration: 21050, loss: 1.7106388807296753
+iteration: 21100, loss: 1.602170467376709
+epoch 15, loss: 1.698058759839104
+epoch 16
+iteration: 21150, loss: 2.2690255641937256
+iteration: 21200, loss: 1.593336582183838
+iteration: 21250, loss: 1.5576533079147339
+iteration: 21300, loss: 1.1788643598556519
+iteration: 21350, loss: 1.508683204650879
+iteration: 21400, loss: 1.7872095108032227
+iteration: 21450, loss: 1.8313348293304443
+iteration: 21500, loss: 1.645096778869629
+iteration: 21550, loss: 1.8204731941223145
+iteration: 21600, loss: 1.5858787298202515
+iteration: 21650, loss: 1.7613643407821655
+iteration: 21700, loss: 1.7399312257766724
+iteration: 21750, loss: 1.567233681678772
+iteration: 21800, loss: 1.8459488153457642
+iteration: 21850, loss: 2.103780746459961
+iteration: 21900, loss: 1.587854027748108
+iteration: 21950, loss: 1.561821699142456
+iteration: 22000, loss: 1.633592963218689
+iteration: 22050, loss: 1.9421480894088745
+iteration: 22100, loss: 1.426663875579834
+iteration: 22150, loss: 2.0429744720458984
+iteration: 22200, loss: 1.5033553838729858
+iteration: 22250, loss: 1.8155910968780518
+iteration: 22300, loss: 1.2484056949615479
+iteration: 22350, loss: 1.5034908056259155
+iteration: 22400, loss: 1.8497285842895508
+iteration: 22450, loss: 2.122157573699951
+epoch 16, loss: 1.6878966798845505
+epoch 17
+iteration: 22500, loss: 1.454171061515808
+iteration: 22550, loss: 1.6061599254608154
+iteration: 22600, loss: 1.7061374187469482
+iteration: 22650, loss: 2.0687711238861084
+iteration: 22700, loss: 1.3123533725738525
+iteration: 22750, loss: 1.8537744283676147
+iteration: 22800, loss: 2.1926283836364746
+iteration: 22850, loss: 1.3795957565307617
+iteration: 22900, loss: 1.2439357042312622
+iteration: 22950, loss: 1.4993735551834106
+iteration: 23000, loss: 2.0366642475128174
+iteration: 23050, loss: 1.389318823814392
+iteration: 23100, loss: 1.7767189741134644
+iteration: 23150, loss: 2.0746560096740723
+iteration: 23200, loss: 1.9987903833389282
+iteration: 23250, loss: 1.7726393938064575
+iteration: 23300, loss: 2.716275930404663
+iteration: 23350, loss: 1.5818564891815186
+iteration: 23400, loss: 1.4804397821426392
+iteration: 23450, loss: 1.5982999801635742
+iteration: 23500, loss: 1.6922521591186523
+iteration: 23550, loss: 1.424695611000061
+iteration: 23600, loss: 2.0041697025299072
+iteration: 23650, loss: 1.6458276510238647
+iteration: 23700, loss: 1.4497283697128296
+iteration: 23750, loss: 1.5045498609542847
+epoch 17, loss: 1.6860634080170458
+epoch 18
+iteration: 23800, loss: 2.01688814163208
+iteration: 23850, loss: 1.2223310470581055
+iteration: 23900, loss: 1.9511696100234985
+iteration: 23950, loss: 1.3891586065292358
+iteration: 24000, loss: 2.435685396194458
+iteration: 24050, loss: 2.0801167488098145
+iteration: 24100, loss: 1.3689433336257935
+iteration: 24150, loss: 1.50447678565979
+iteration: 24200, loss: 1.0779772996902466
+iteration: 24250, loss: 1.9147956371307373
+iteration: 24300, loss: 1.8344941139221191
+iteration: 24350, loss: 1.6674684286117554
+iteration: 24400, loss: 1.7767267227172852
+iteration: 24450, loss: 1.4716225862503052
+iteration: 24500, loss: 1.5715076923370361
+iteration: 24550, loss: 1.9412574768066406
+iteration: 24600, loss: 1.6931673288345337
+iteration: 24650, loss: 1.7622965574264526
+iteration: 24700, loss: 1.3744956254959106
+iteration: 24750, loss: 1.835539698600769
+iteration: 24800, loss: 1.593131422996521
+iteration: 24850, loss: 1.5853697061538696
+iteration: 24900, loss: 1.6523183584213257
+iteration: 24950, loss: 2.1494503021240234
+iteration: 25000, loss: 1.3738141059875488
+iteration: 25050, loss: 1.4869810342788696
+epoch 18, loss: 1.6744676590868066
+epoch 19
+iteration: 25100, loss: 1.5624133348464966
+iteration: 25150, loss: 1.5737969875335693
+iteration: 25200, loss: 2.03330135345459
+iteration: 25250, loss: 2.1104507446289062
+iteration: 25300, loss: 2.3394081592559814
+iteration: 25350, loss: 1.7999259233474731
+iteration: 25400, loss: 1.6279009580612183
+iteration: 25450, loss: 1.2148163318634033
+iteration: 25500, loss: 1.2607814073562622
+iteration: 25550, loss: 1.936651349067688
+iteration: 25600, loss: 1.976593255996704
+iteration: 25650, loss: 1.3533616065979004
+iteration: 25700, loss: 2.042897939682007
+iteration: 25750, loss: 1.894553542137146
+iteration: 25800, loss: 1.4883683919906616
+iteration: 25850, loss: 1.5002588033676147
+iteration: 25900, loss: 1.4028875827789307
+iteration: 25950, loss: 1.1270524263381958
+iteration: 26000, loss: 1.7678836584091187
+iteration: 26050, loss: 1.261356234550476
+iteration: 26100, loss: 1.4168659448623657
+iteration: 26150, loss: 1.5515828132629395
+iteration: 26200, loss: 1.6442064046859741
+iteration: 26250, loss: 1.6666725873947144
+iteration: 26300, loss: 2.4338388442993164
+iteration: 26350, loss: 1.7099688053131104
+iteration: 26400, loss: 1.8981351852416992
+epoch 19, loss: 1.663190849614572
+epoch 20
+iteration: 26450, loss: 1.9153376817703247
+iteration: 26500, loss: 1.336738109588623
+iteration: 26550, loss: 2.0138187408447266
+iteration: 26600, loss: 1.910407543182373
+iteration: 26650, loss: 1.50492525100708
+iteration: 26700, loss: 1.6643885374069214
+iteration: 26750, loss: 1.4115653038024902
+iteration: 26800, loss: 1.4993070363998413
+iteration: 26850, loss: 1.363560676574707
+iteration: 26900, loss: 1.6557210683822632
+iteration: 26950, loss: 1.7040510177612305
+iteration: 27000, loss: 1.7839564085006714
+iteration: 27050, loss: 1.6808710098266602
+iteration: 27100, loss: 1.392831802368164
+iteration: 27150, loss: 2.4181342124938965
+iteration: 27200, loss: 1.9063013792037964
+iteration: 27250, loss: 1.885411262512207
+iteration: 27300, loss: 1.353327751159668
+iteration: 27350, loss: 1.4171476364135742
+iteration: 27400, loss: 1.71809983253479
+iteration: 27450, loss: 1.7219183444976807
+iteration: 27500, loss: 1.8824001550674438
+iteration: 27550, loss: 1.4761617183685303
+iteration: 27600, loss: 1.4034136533737183
+iteration: 27650, loss: 1.490867018699646
+iteration: 27700, loss: 1.6962060928344727
+epoch 20, loss: 1.65567373115157
+epoch 21
+iteration: 27750, loss: 1.7728151082992554
+iteration: 27800, loss: 1.7974388599395752
+iteration: 27850, loss: 1.089178204536438
+iteration: 27900, loss: 1.741784930229187
+iteration: 27950, loss: 1.561583399772644
+iteration: 28000, loss: 1.8109732866287231
+iteration: 28050, loss: 1.8628015518188477
+iteration: 28100, loss: 1.7786259651184082
+iteration: 28150, loss: 1.2548563480377197
+iteration: 28200, loss: 2.1675593852996826
+iteration: 28250, loss: 1.2923576831817627
+iteration: 28300, loss: 2.008127450942993
+iteration: 28350, loss: 2.0903117656707764
+iteration: 28400, loss: 1.4963089227676392
+iteration: 28450, loss: 1.8012861013412476
+iteration: 28500, loss: 1.3200572729110718
+iteration: 28550, loss: 1.6545432806015015
+iteration: 28600, loss: 1.7178813219070435
+iteration: 28650, loss: 1.6187220811843872
+iteration: 28700, loss: 1.707421898841858
+iteration: 28750, loss: 1.8613609075546265
+iteration: 28800, loss: 1.4761461019515991
+iteration: 28850, loss: 1.6268510818481445
+iteration: 28900, loss: 1.6251804828643799
+iteration: 28950, loss: 1.4926854372024536
+iteration: 29000, loss: 1.8511236906051636
+iteration: 29050, loss: 1.4888516664505005
+epoch 21, loss: 1.6481525882190426
+epoch 22
+iteration: 29100, loss: 1.160863995552063
+iteration: 29150, loss: 1.6211416721343994
+iteration: 29200, loss: 1.6047252416610718
+iteration: 29250, loss: 1.4803414344787598
+iteration: 29300, loss: 1.6179955005645752
+iteration: 29350, loss: 2.0380921363830566
+iteration: 29400, loss: 1.5766205787658691
+iteration: 29450, loss: 2.2406535148620605
+iteration: 29500, loss: 1.9403676986694336
+iteration: 29550, loss: 1.5176482200622559
+iteration: 29600, loss: 1.3283263444900513
+iteration: 29650, loss: 2.0837976932525635
+iteration: 29700, loss: 2.112243890762329
+iteration: 29750, loss: 1.3939017057418823
+iteration: 29800, loss: 1.4251848459243774
+iteration: 29850, loss: 1.6275625228881836
+iteration: 29900, loss: 1.451741337776184
+iteration: 29950, loss: 1.364201545715332
+iteration: 30000, loss: 1.6287059783935547
+iteration: 30050, loss: 1.492013692855835
+iteration: 30100, loss: 2.5269410610198975
+iteration: 30150, loss: 1.4550880193710327
+iteration: 30200, loss: 1.94293212890625
+iteration: 30250, loss: 1.6726559400558472
+iteration: 30300, loss: 1.4911803007125854
+iteration: 30350, loss: 1.7234339714050293
+epoch 22, loss: 1.639959711202948
+epoch 23
+iteration: 30400, loss: 2.2468624114990234
+iteration: 30450, loss: 1.554399013519287
+iteration: 30500, loss: 1.0876891613006592
+iteration: 30550, loss: 1.5860036611557007
+iteration: 30600, loss: 1.8130316734313965
+iteration: 30650, loss: 1.2428276538848877
+iteration: 30700, loss: 1.8795676231384277
+iteration: 30750, loss: 1.046487808227539
+iteration: 30800, loss: 1.5411865711212158
+iteration: 30850, loss: 1.5404072999954224
+iteration: 30900, loss: 2.0895369052886963
+iteration: 30950, loss: 1.8271903991699219
+iteration: 31000, loss: 1.3266712427139282
+iteration: 31050, loss: 1.3725790977478027
+iteration: 31100, loss: 1.6797090768814087
+iteration: 31150, loss: 1.5603482723236084
+iteration: 31200, loss: 1.4822673797607422
+iteration: 31250, loss: 1.8626344203948975
+iteration: 31300, loss: 1.9127870798110962
+iteration: 31350, loss: 1.2207369804382324
+iteration: 31400, loss: 1.637623906135559
+iteration: 31450, loss: 1.6275992393493652
+iteration: 31500, loss: 1.4139294624328613
+iteration: 31550, loss: 2.134634017944336
+iteration: 31600, loss: 1.4871853590011597
+iteration: 31650, loss: 1.6205285787582397
+iteration: 31700, loss: 1.6909011602401733
+epoch 23, loss: 1.6366914435163802
+epoch 24
+iteration: 31750, loss: 1.4728186130523682
+iteration: 31800, loss: 1.4497348070144653
+iteration: 31850, loss: 1.9692225456237793
+iteration: 31900, loss: 1.7022253274917603
+iteration: 31950, loss: 1.6035476922988892
+iteration: 32000, loss: 1.4517831802368164
+iteration: 32050, loss: 1.729557991027832
+iteration: 32100, loss: 1.2474459409713745
+iteration: 32150, loss: 1.5773965120315552
+iteration: 32200, loss: 1.6785473823547363
+iteration: 32250, loss: 1.390387773513794
+iteration: 32300, loss: 1.842342495918274
+iteration: 32350, loss: 1.8273667097091675
+iteration: 32400, loss: 1.9153053760528564
+iteration: 32450, loss: 1.719005823135376
+iteration: 32500, loss: 1.7731399536132812
+iteration: 32550, loss: 1.2539606094360352
+iteration: 32600, loss: 1.3016881942749023
+iteration: 32650, loss: 1.759173035621643
+iteration: 32700, loss: 1.6567262411117554
+iteration: 32750, loss: 2.0811703205108643
+iteration: 32800, loss: 1.2589610815048218
+iteration: 32850, loss: 1.8818016052246094
+iteration: 32900, loss: 1.2112292051315308
+iteration: 32950, loss: 1.4620765447616577
+iteration: 33000, loss: 1.3523694276809692
+epoch 24, loss: 1.632457831454029
+epoch 25
+iteration: 33050, loss: 1.2513017654418945
+iteration: 33100, loss: 1.8191359043121338
+iteration: 33150, loss: 1.5155636072158813
+iteration: 33200, loss: 2.025657892227173
+iteration: 33250, loss: 1.813232421875
+iteration: 33300, loss: 1.833690881729126
+iteration: 33350, loss: 1.7029683589935303
+iteration: 33400, loss: 1.3113608360290527
+iteration: 33450, loss: 1.7719488143920898
+iteration: 33500, loss: 1.6212409734725952
+iteration: 33550, loss: 1.9975554943084717
+iteration: 33600, loss: 1.4600201845169067
+iteration: 33650, loss: 2.0751309394836426
+iteration: 33700, loss: 1.615604043006897
+iteration: 33750, loss: 2.0897839069366455
+iteration: 33800, loss: 2.6466751098632812
+iteration: 33850, loss: 1.6655207872390747
+iteration: 33900, loss: 1.515769124031067
+iteration: 33950, loss: 1.8468316793441772
+iteration: 34000, loss: 2.096910238265991
+iteration: 34050, loss: 1.6544270515441895
+iteration: 34100, loss: 1.517443060874939
+iteration: 34150, loss: 1.5608510971069336
+iteration: 34200, loss: 1.848771095275879
+iteration: 34250, loss: 1.4897059202194214
+iteration: 34300, loss: 1.8928159475326538
+epoch 25, loss: 1.6206173450177643
+epoch 26
+iteration: 34350, loss: 1.264090657234192
+iteration: 34400, loss: 1.806105613708496
+iteration: 34450, loss: 1.3751075267791748
+iteration: 34500, loss: 1.264321208000183
+iteration: 34550, loss: 1.3842227458953857
+iteration: 34600, loss: 1.9264434576034546
+iteration: 34650, loss: 2.3064069747924805
+iteration: 34700, loss: 2.3533830642700195
+iteration: 34750, loss: 2.312572479248047
+iteration: 34800, loss: 1.2490384578704834
+iteration: 34850, loss: 1.2621678113937378
+iteration: 34900, loss: 1.464327335357666
+iteration: 34950, loss: 2.038097858428955
+iteration: 35000, loss: 1.63064706325531
+iteration: 35050, loss: 1.7525734901428223
+iteration: 35100, loss: 1.4727890491485596
+iteration: 35150, loss: 1.4161070585250854
+iteration: 35200, loss: 2.0251173973083496
+iteration: 35250, loss: 1.7413946390151978
+iteration: 35300, loss: 1.5358253717422485
+iteration: 35350, loss: 1.7822917699813843
+iteration: 35400, loss: 1.2740087509155273
+iteration: 35450, loss: 1.261610507965088
+iteration: 35500, loss: 1.6855162382125854
+iteration: 35550, loss: 1.2053627967834473
+iteration: 35600, loss: 1.4683852195739746
+iteration: 35650, loss: 1.442214012145996
+epoch 26, loss: 1.6084336867733957
+epoch 27
+iteration: 35700, loss: 1.5010666847229004
+iteration: 35750, loss: 1.8923983573913574
+iteration: 35800, loss: 1.546047568321228
+iteration: 35850, loss: 1.6786084175109863
+iteration: 35900, loss: 1.8393446207046509
+iteration: 35950, loss: 1.3564741611480713
+iteration: 36000, loss: 1.5348113775253296
+iteration: 36050, loss: 2.004549026489258
+iteration: 36100, loss: 1.5446960926055908
+iteration: 36150, loss: 2.0766818523406982
+iteration: 36200, loss: 1.3785661458969116
+iteration: 36250, loss: 1.5988414287567139
+iteration: 36300, loss: 1.8280541896820068
+iteration: 36350, loss: 1.6671031713485718
+iteration: 36400, loss: 1.9395864009857178
+iteration: 36450, loss: 1.1388299465179443
+iteration: 36500, loss: 1.4196943044662476
+iteration: 36550, loss: 2.506028890609741
+iteration: 36600, loss: 1.4946844577789307
+iteration: 36650, loss: 1.669950008392334
+iteration: 36700, loss: 2.2984492778778076
+iteration: 36750, loss: 1.231624960899353
+iteration: 36800, loss: 1.2114050388336182
+iteration: 36850, loss: 1.6479849815368652
+iteration: 36900, loss: 1.3398468494415283
+iteration: 36950, loss: 1.7259246110916138
+epoch 27, loss: 1.605173572957121
+epoch 28
+iteration: 37000, loss: 1.3142133951187134
+iteration: 37050, loss: 1.3199694156646729
+iteration: 37100, loss: 1.9611040353775024
+iteration: 37150, loss: 1.7046304941177368
+iteration: 37200, loss: 1.6465312242507935
+iteration: 37250, loss: 1.827684760093689
+iteration: 37300, loss: 1.4140024185180664
+iteration: 37350, loss: 1.3532187938690186
+iteration: 37400, loss: 1.7435940504074097
+iteration: 37450, loss: 1.4696818590164185
+iteration: 37500, loss: 1.1276376247406006
+iteration: 37550, loss: 2.182603359222412
+iteration: 37600, loss: 1.410361647605896
+iteration: 37650, loss: 1.5754241943359375
+iteration: 37700, loss: 1.863431692123413
+iteration: 37750, loss: 1.6037449836730957
+iteration: 37800, loss: 1.4124611616134644
+iteration: 37850, loss: 1.8410698175430298
+iteration: 37900, loss: 1.781781792640686
+iteration: 37950, loss: 1.4346928596496582
+iteration: 38000, loss: 1.9540966749191284
+iteration: 38050, loss: 1.9211678504943848
+iteration: 38100, loss: 1.9479119777679443
+iteration: 38150, loss: 1.7515947818756104
+iteration: 38200, loss: 1.2925289869308472
+iteration: 38250, loss: 1.8517621755599976
+iteration: 38300, loss: 0.9951680898666382
+epoch 28, loss: 1.5887427703998172
+epoch 29
+iteration: 38350, loss: 1.3485825061798096
+iteration: 38400, loss: 1.6883713006973267
+iteration: 38450, loss: 1.7744860649108887
+iteration: 38500, loss: 1.2947906255722046
+iteration: 38550, loss: 1.2904603481292725
+iteration: 38600, loss: 1.3372251987457275
+iteration: 38650, loss: 1.375370740890503
+iteration: 38700, loss: 1.1504685878753662
+iteration: 38750, loss: 1.341732144355774
+iteration: 38800, loss: 1.4910738468170166
+iteration: 38850, loss: 1.3785412311553955
+iteration: 38900, loss: 1.734959602355957
+iteration: 38950, loss: 1.5630055665969849
+iteration: 39000, loss: 1.5676307678222656
+iteration: 39050, loss: 1.6726293563842773
+iteration: 39100, loss: 1.1678184270858765
+iteration: 39150, loss: 1.4131675958633423
+iteration: 39200, loss: 1.5687148571014404
+iteration: 39250, loss: 1.5677037239074707
+iteration: 39300, loss: 1.4204708337783813
+iteration: 39350, loss: 1.7644786834716797
+iteration: 39400, loss: 1.388252854347229
+iteration: 39450, loss: 1.2761528491973877
+iteration: 39500, loss: 1.7364708185195923
+iteration: 39550, loss: 1.8946737051010132
+iteration: 39600, loss: 1.8038427829742432
+epoch 29, loss: 1.5873239271800925
+epoch 30
+iteration: 39650, loss: 1.4947271347045898
+iteration: 39700, loss: 1.4118460416793823
+iteration: 39750, loss: 1.298111915588379
+iteration: 39800, loss: 1.563712239265442
+iteration: 39850, loss: 1.2801201343536377
+iteration: 39900, loss: 1.1980379819869995
+iteration: 39950, loss: 1.7654937505722046
+iteration: 40000, loss: 1.7422763109207153
+iteration: 40050, loss: 1.6686979532241821
+iteration: 40100, loss: 1.5377229452133179
+iteration: 40150, loss: 1.344254732131958
+iteration: 40200, loss: 1.3580071926116943
+iteration: 40250, loss: 1.5683772563934326
+iteration: 40300, loss: 2.6359431743621826
+iteration: 40350, loss: 1.5943019390106201
+iteration: 40400, loss: 1.2951946258544922
+iteration: 40450, loss: 1.7806183099746704
+iteration: 40500, loss: 1.6490556001663208
+iteration: 40550, loss: 1.589160680770874
+iteration: 40600, loss: 1.7145460844039917
+iteration: 40650, loss: 2.190513849258423
+iteration: 40700, loss: 2.0065693855285645
+iteration: 40750, loss: 1.255420207977295
+iteration: 40800, loss: 1.2908238172531128
+iteration: 40850, loss: 1.9446477890014648
+iteration: 40900, loss: 1.6595910787582397
+iteration: 40950, loss: 1.8268957138061523
+epoch 30, loss: 1.58334992755215
+epoch 31
+iteration: 41000, loss: 1.5211865901947021
+iteration: 41050, loss: 1.4709399938583374
+iteration: 41100, loss: 1.4069952964782715
+iteration: 41150, loss: 1.3011586666107178
+iteration: 41200, loss: 1.5699769258499146
+iteration: 41250, loss: 1.6360646486282349
+iteration: 41300, loss: 1.6572246551513672
+iteration: 41350, loss: 1.613558053970337
+iteration: 41400, loss: 1.4537906646728516
+iteration: 41450, loss: 1.8272604942321777
+iteration: 41500, loss: 1.2592203617095947
+iteration: 41550, loss: 1.4678983688354492
+iteration: 41600, loss: 1.6496014595031738
+iteration: 41650, loss: 1.4252073764801025
+iteration: 41700, loss: 1.3506805896759033
+iteration: 41750, loss: 1.5576601028442383
+iteration: 41800, loss: 1.8065440654754639
+iteration: 41850, loss: 1.7401551008224487
+iteration: 41900, loss: 2.1010079383850098
+iteration: 41950, loss: 1.7544792890548706
+iteration: 42000, loss: 1.5649303197860718
+iteration: 42050, loss: 1.1968151330947876
+iteration: 42100, loss: 1.6561176776885986
+iteration: 42150, loss: 2.6462950706481934
+iteration: 42200, loss: 2.118232250213623
+iteration: 42250, loss: 1.2993810176849365
+epoch 31, loss: 1.5771083956297096
+epoch 32
+iteration: 42300, loss: 1.7756050825119019
+iteration: 42350, loss: 1.4781302213668823
+iteration: 42400, loss: 1.4255715608596802
+iteration: 42450, loss: 1.5456947088241577
+iteration: 42500, loss: 1.5745713710784912
+iteration: 42550, loss: 1.4421098232269287
+iteration: 42600, loss: 1.460730791091919
+iteration: 42650, loss: 1.6132888793945312
+iteration: 42700, loss: 1.7391293048858643
+iteration: 42750, loss: 1.493395447731018
+iteration: 42800, loss: 1.3137983083724976
+iteration: 42850, loss: 1.9583775997161865
+iteration: 42900, loss: 1.3580979108810425
+iteration: 42950, loss: 1.3112574815750122
+iteration: 43000, loss: 1.7896599769592285
+iteration: 43050, loss: 1.6354060173034668
+iteration: 43100, loss: 1.632182240486145
+iteration: 43150, loss: 1.7397388219833374
+iteration: 43200, loss: 2.43861985206604
+iteration: 43250, loss: 1.72210693359375
+iteration: 43300, loss: 1.3881969451904297
+iteration: 43350, loss: 1.8945682048797607
+iteration: 43400, loss: 1.6287057399749756
+iteration: 43450, loss: 1.2818013429641724
+iteration: 43500, loss: 1.5063724517822266
+iteration: 43550, loss: 1.643275260925293
+epoch 32, loss: 1.5672451504695608
+epoch 33
+iteration: 43600, loss: 1.8265976905822754
+iteration: 43650, loss: 2.0063540935516357
+iteration: 43700, loss: 1.7697112560272217
+iteration: 43750, loss: 2.3429338932037354
+iteration: 43800, loss: 1.9067870378494263
+iteration: 43850, loss: 2.0415306091308594
+iteration: 43900, loss: 2.037165641784668
+iteration: 43950, loss: 2.3760104179382324
+iteration: 44000, loss: 1.703629493713379
+iteration: 44050, loss: 1.6022453308105469
+iteration: 44100, loss: 1.951888918876648
+iteration: 44150, loss: 1.76370108127594
+iteration: 44200, loss: 1.8853005170822144
+iteration: 44250, loss: 1.3300029039382935
+iteration: 44300, loss: 1.6927597522735596
+iteration: 44350, loss: 2.08711838722229
+iteration: 44400, loss: 1.8937041759490967
+iteration: 44450, loss: 2.2587621212005615
+iteration: 44500, loss: 1.8942475318908691
+iteration: 44550, loss: 1.4403074979782104
+iteration: 44600, loss: 1.5634806156158447
+iteration: 44650, loss: 1.7989208698272705
+iteration: 44700, loss: 1.9873346090316772
+iteration: 44750, loss: 1.5421077013015747
+iteration: 44800, loss: 1.2651151418685913
+iteration: 44850, loss: 1.45257568359375
+iteration: 44900, loss: 1.5802537202835083
+epoch 33, loss: 1.5668539467236853
+epoch 34
+iteration: 44950, loss: 1.661319613456726
+iteration: 45000, loss: 1.4316641092300415
+iteration: 45050, loss: 1.4811357259750366
+iteration: 45100, loss: 2.0488908290863037
+iteration: 45150, loss: 1.4716778993606567
+iteration: 45200, loss: 1.9146517515182495
+iteration: 45250, loss: 1.4872591495513916
+iteration: 45300, loss: 1.5551711320877075
+iteration: 45350, loss: 2.163921594619751
+iteration: 45400, loss: 1.4346405267715454
+iteration: 45450, loss: 1.3530060052871704
+iteration: 45500, loss: 1.6146701574325562
+iteration: 45550, loss: 1.8321374654769897
+iteration: 45600, loss: 1.3945869207382202
+iteration: 45650, loss: 1.8521606922149658
+iteration: 45700, loss: 1.060038685798645
+iteration: 45750, loss: 1.7291820049285889
+iteration: 45800, loss: 1.6023776531219482
+iteration: 45850, loss: 1.4711592197418213
+iteration: 45900, loss: 1.44329833984375
+iteration: 45950, loss: 1.908844232559204
+iteration: 46000, loss: 1.7325294017791748
+iteration: 46050, loss: 1.336531162261963
+iteration: 46100, loss: 1.827436089515686
+iteration: 46150, loss: 1.4341028928756714
+iteration: 46200, loss: 1.6473500728607178
+epoch 34, loss: 1.5574051118054926
+epoch 35
+iteration: 46250, loss: 1.427157998085022
+iteration: 46300, loss: 1.52317476272583
+iteration: 46350, loss: 1.9168835878372192
+iteration: 46400, loss: 1.2524638175964355
+iteration: 46450, loss: 1.386217713356018
+iteration: 46500, loss: 1.6433783769607544
+iteration: 46550, loss: 1.8144220113754272
+iteration: 46600, loss: 1.4529266357421875
+iteration: 46650, loss: 1.384685754776001
+iteration: 46700, loss: 1.6175404787063599
+iteration: 46750, loss: 1.3585560321807861
+iteration: 46800, loss: 1.411078929901123
+iteration: 46850, loss: 1.2951829433441162
+iteration: 46900, loss: 1.9492093324661255
+iteration: 46950, loss: 1.5118001699447632
+iteration: 47000, loss: 1.2925328016281128
+iteration: 47050, loss: 1.5638339519500732
+iteration: 47100, loss: 1.5672998428344727
+iteration: 47150, loss: 1.8517528772354126
+iteration: 47200, loss: 1.408645510673523
+iteration: 47250, loss: 2.3089044094085693
+iteration: 47300, loss: 1.5655949115753174
+iteration: 47350, loss: 1.2865257263183594
+iteration: 47400, loss: 1.76267671585083
+iteration: 47450, loss: 1.4733238220214844
+iteration: 47500, loss: 1.2804186344146729
+iteration: 47550, loss: 1.6802223920822144
+epoch 35, loss: 1.5539824065783165
+epoch 36
+iteration: 47600, loss: 1.33537757396698
+iteration: 47650, loss: 1.072234034538269
+iteration: 47700, loss: 1.5751886367797852
+iteration: 47750, loss: 1.4860918521881104
+iteration: 47800, loss: 1.34452486038208
+iteration: 47850, loss: 1.5393140316009521
+iteration: 47900, loss: 1.4991025924682617
+iteration: 47950, loss: 1.0352941751480103
+iteration: 48000, loss: 1.176547646522522
+iteration: 48050, loss: 1.7977770566940308
+iteration: 48100, loss: 1.1500446796417236
+iteration: 48150, loss: 1.7462540864944458
+iteration: 48200, loss: 1.3890960216522217
+iteration: 48250, loss: 1.6345858573913574
+iteration: 48300, loss: 1.6050044298171997
+iteration: 48350, loss: 1.9563103914260864
+iteration: 48400, loss: 1.6775023937225342
+iteration: 48450, loss: 1.3535006046295166
+iteration: 48500, loss: 1.4227676391601562
+iteration: 48550, loss: 1.2435903549194336
+iteration: 48600, loss: 2.294325113296509
+iteration: 48650, loss: 1.5136860609054565
+iteration: 48700, loss: 1.7484771013259888
+iteration: 48750, loss: 1.4487812519073486
+iteration: 48800, loss: 1.3600101470947266
+iteration: 48850, loss: 1.6438016891479492
+epoch 36, loss: 1.5449980428112828
+epoch 37
+iteration: 48900, loss: 1.1253315210342407
+iteration: 48950, loss: 1.337414264678955
+iteration: 49000, loss: 1.3461307287216187
+iteration: 49050, loss: 1.398736596107483
+iteration: 49100, loss: 1.8657145500183105
+iteration: 49150, loss: 1.3727508783340454
+iteration: 49200, loss: 1.422715187072754
+iteration: 49250, loss: 2.361611843109131
+iteration: 49300, loss: 1.4138673543930054
+iteration: 49350, loss: 1.4497530460357666
+iteration: 49400, loss: 1.1417104005813599
+iteration: 49450, loss: 1.5395561456680298
+iteration: 49500, loss: 1.455967903137207
+iteration: 49550, loss: 1.2760634422302246
+iteration: 49600, loss: 2.408674478530884
+iteration: 49650, loss: 1.692159652709961
+iteration: 49700, loss: 1.5721317529678345
+iteration: 49750, loss: 1.2773356437683105
+iteration: 49800, loss: 1.6336872577667236
+iteration: 49850, loss: 1.4954450130462646
+iteration: 49900, loss: 1.5276707410812378
+iteration: 49950, loss: 1.163183331489563
+iteration: 50000, loss: 1.5242681503295898
+iteration: 50050, loss: 1.6393251419067383
+iteration: 50100, loss: 1.492058515548706
+iteration: 50150, loss: 1.4402978420257568
+epoch 37, loss: 1.5412900727090681
+epoch 38
+iteration: 50200, loss: 1.5537675619125366
+iteration: 50250, loss: 1.5579274892807007
+iteration: 50300, loss: 1.3661317825317383
+iteration: 50350, loss: 1.5492452383041382
+iteration: 50400, loss: 1.334702491760254
+iteration: 50450, loss: 1.3380147218704224
+iteration: 50500, loss: 1.1629868745803833
+iteration: 50550, loss: 1.529463529586792
+iteration: 50600, loss: 1.2847137451171875
+iteration: 50650, loss: 1.9209237098693848
+iteration: 50700, loss: 1.056095004081726
+iteration: 50750, loss: 1.3323262929916382
+iteration: 50800, loss: 1.736999750137329
+iteration: 50850, loss: 1.6111299991607666
+iteration: 50900, loss: 1.398842692375183
+iteration: 50950, loss: 1.3148514032363892
+iteration: 51000, loss: 1.5114717483520508
+iteration: 51050, loss: 1.2615866661071777
+iteration: 51100, loss: 1.4353944063186646
+iteration: 51150, loss: 1.8830406665802002
+iteration: 51200, loss: 1.3236842155456543
+iteration: 51250, loss: 1.6320621967315674
+iteration: 51300, loss: 1.5045228004455566
+iteration: 51350, loss: 1.550581455230713
+iteration: 51400, loss: 1.4060593843460083
+iteration: 51450, loss: 1.2515569925308228
+iteration: 51500, loss: 1.6185253858566284
+epoch 38, loss: 1.544835949530552
+epoch 39
+iteration: 51550, loss: 1.2454805374145508
+iteration: 51600, loss: 1.3494997024536133
+iteration: 51650, loss: 1.4840302467346191
+iteration: 51700, loss: 1.448147177696228
+iteration: 51750, loss: 1.7885419130325317
+iteration: 51800, loss: 1.6865321397781372
+iteration: 51850, loss: 1.2787286043167114
+iteration: 51900, loss: 1.7029118537902832
+iteration: 51950, loss: 1.2110522985458374
+iteration: 52000, loss: 1.358749270439148
+iteration: 52050, loss: 1.2421331405639648
+iteration: 52100, loss: 1.43159818649292
+iteration: 52150, loss: 1.1441329717636108
+iteration: 52200, loss: 1.533529281616211
+iteration: 52250, loss: 1.2952934503555298
+iteration: 52300, loss: 0.9865278601646423
+iteration: 52350, loss: 1.6149325370788574
+iteration: 52400, loss: 1.475838541984558
+iteration: 52450, loss: 1.157617211341858
+iteration: 52500, loss: 2.6942968368530273
+iteration: 52550, loss: 1.9822471141815186
+iteration: 52600, loss: 1.3276680707931519
+iteration: 52650, loss: 1.6912481784820557
+iteration: 52700, loss: 1.3567607402801514
+iteration: 52750, loss: 1.026207685470581
+iteration: 52800, loss: 1.3607549667358398
+epoch 39, loss: 1.5250049975421367
+epoch 40
+iteration: 52850, loss: 1.760114312171936
+iteration: 52900, loss: 1.8086423873901367
+iteration: 52950, loss: 1.3243296146392822
+iteration: 53000, loss: 1.3973138332366943
+iteration: 53050, loss: 1.56721830368042
+iteration: 53100, loss: 1.4892570972442627
+iteration: 53150, loss: 1.3558560609817505
+iteration: 53200, loss: 1.4771008491516113
+iteration: 53250, loss: 1.3422600030899048
+iteration: 53300, loss: 1.7656524181365967
+iteration: 53350, loss: 1.4040776491165161
+iteration: 53400, loss: 1.502508282661438
+iteration: 53450, loss: 1.6841882467269897
+iteration: 53500, loss: 1.7632752656936646
+iteration: 53550, loss: 1.5016045570373535
+iteration: 53600, loss: 1.3876583576202393
+iteration: 53650, loss: 1.5646370649337769
+iteration: 53700, loss: 1.5999369621276855
+iteration: 53750, loss: 1.3730123043060303
+iteration: 53800, loss: 1.3802939653396606
+iteration: 53850, loss: 1.3955879211425781
+iteration: 53900, loss: 1.1189416646957397
+iteration: 53950, loss: 1.2266392707824707
+iteration: 54000, loss: 1.7928006649017334
+iteration: 54050, loss: 1.8184400796890259
+iteration: 54100, loss: 1.6619610786437988
+iteration: 54150, loss: 1.4472185373306274
+epoch 40, loss: 1.522470699128049
+epoch 41
+iteration: 54200, loss: 1.915509581565857
+iteration: 54250, loss: 1.3408830165863037
+iteration: 54300, loss: 1.079481601715088
+iteration: 54350, loss: 1.7958577871322632
+iteration: 54400, loss: 1.0691640377044678
+iteration: 54450, loss: 1.4237632751464844
+iteration: 54500, loss: 1.4024016857147217
+iteration: 54550, loss: 1.4460254907608032
+iteration: 54600, loss: 1.1979122161865234
+iteration: 54650, loss: 1.1782379150390625
+iteration: 54700, loss: 1.3108549118041992
+iteration: 54750, loss: 1.6812280416488647
+iteration: 54800, loss: 1.5792279243469238
+iteration: 54850, loss: 1.3396246433258057
+iteration: 54900, loss: 1.477819800376892
+iteration: 54950, loss: 1.134365439414978
+iteration: 55000, loss: 1.618564486503601
+iteration: 55050, loss: 1.6321536302566528
+iteration: 55100, loss: 1.1111544370651245
+iteration: 55150, loss: 1.8805696964263916
+iteration: 55200, loss: 1.711035132408142
+iteration: 55250, loss: 1.767231822013855
+iteration: 55300, loss: 1.8821909427642822
+iteration: 55350, loss: 1.5892597436904907
+iteration: 55400, loss: 2.0458219051361084
+iteration: 55450, loss: 1.665300726890564
+epoch 41, loss: 1.5212981256540925
+epoch 42
+iteration: 55500, loss: 2.8055520057678223
+iteration: 55550, loss: 1.3947906494140625
+iteration: 55600, loss: 1.731235146522522
+iteration: 55650, loss: 1.5506840944290161
+iteration: 55700, loss: 1.6195118427276611
+iteration: 55750, loss: 1.0406121015548706
+iteration: 55800, loss: 1.6810089349746704
+iteration: 55850, loss: 1.6432075500488281
+iteration: 55900, loss: 1.8365187644958496
+iteration: 55950, loss: 1.5262181758880615
+iteration: 56000, loss: 1.6494582891464233
+iteration: 56050, loss: 1.5140451192855835
+iteration: 56100, loss: 1.5616428852081299
+iteration: 56150, loss: 1.7478349208831787
+iteration: 56200, loss: 1.5116897821426392
+iteration: 56250, loss: 1.734716773033142
+iteration: 56300, loss: 1.297563076019287
+iteration: 56350, loss: 1.704586386680603
+iteration: 56400, loss: 1.4108439683914185
+iteration: 56450, loss: 1.6184502840042114
+iteration: 56500, loss: 1.2746914625167847
+iteration: 56550, loss: 1.7301405668258667
+iteration: 56600, loss: 1.5899457931518555
+iteration: 56650, loss: 1.5253419876098633
+iteration: 56700, loss: 1.0665276050567627
+iteration: 56750, loss: 1.2718172073364258
+iteration: 56800, loss: 1.3138294219970703
+epoch 42, loss: 1.5227946551204743
+epoch 43
+iteration: 56850, loss: 1.3950026035308838
+iteration: 56900, loss: 1.2648614645004272
+iteration: 56950, loss: 1.8165876865386963
+iteration: 57000, loss: 1.9652162790298462
+iteration: 57050, loss: 2.033416271209717
+iteration: 57100, loss: 2.049941062927246
+iteration: 57150, loss: 1.2418526411056519
+iteration: 57200, loss: 1.9302749633789062
+iteration: 57250, loss: 1.393876314163208
+iteration: 57300, loss: 1.2736682891845703
+iteration: 57350, loss: 1.2808769941329956
+iteration: 57400, loss: 1.7042983770370483
+iteration: 57450, loss: 1.462530255317688
+iteration: 57500, loss: 1.4488871097564697
+iteration: 57550, loss: 0.9148600101470947
+iteration: 57600, loss: 1.9606444835662842
+iteration: 57650, loss: 1.320712924003601
+iteration: 57700, loss: 1.838712453842163
+iteration: 57750, loss: 1.4206631183624268
+iteration: 57800, loss: 1.806037187576294
+iteration: 57850, loss: 1.3644659519195557
+iteration: 57900, loss: 1.5438411235809326
+iteration: 57950, loss: 1.8459343910217285
+iteration: 58000, loss: 1.2558578252792358
+iteration: 58050, loss: 1.3115721940994263
+iteration: 58100, loss: 1.9253699779510498
+epoch 43, loss: 1.518343132942943
+epoch 44
+iteration: 58150, loss: 1.2856943607330322
+iteration: 58200, loss: 1.190740704536438
+iteration: 58250, loss: 1.800653100013733
+iteration: 58300, loss: 1.7042917013168335
+iteration: 58350, loss: 1.5436965227127075
+iteration: 58400, loss: 1.326446294784546
+iteration: 58450, loss: 1.5989617109298706
+iteration: 58500, loss: 1.4177321195602417
+iteration: 58550, loss: 1.5846894979476929
+iteration: 58600, loss: 1.4118932485580444
+iteration: 58650, loss: 1.1745601892471313
+iteration: 58700, loss: 1.1593002080917358
+iteration: 58750, loss: 1.2945693731307983
+iteration: 58800, loss: 1.449387788772583
+iteration: 58850, loss: 1.3906668424606323
+iteration: 58900, loss: 1.4951844215393066
+iteration: 58950, loss: 1.4396884441375732
+iteration: 59000, loss: 1.2204126119613647
+iteration: 59050, loss: 1.2242193222045898
+iteration: 59100, loss: 1.4727447032928467
+iteration: 59150, loss: 1.5118910074234009
+iteration: 59200, loss: 1.7405147552490234
+iteration: 59250, loss: 1.601786494255066
+iteration: 59300, loss: 1.6700745820999146
+iteration: 59350, loss: 1.167480707168579
+iteration: 59400, loss: 1.6229023933410645
+epoch 44, loss: 1.5065580057218149
+epoch 45
+iteration: 59450, loss: 1.3933486938476562
+iteration: 59500, loss: 1.8581254482269287
+iteration: 59550, loss: 1.602420687675476
+iteration: 59600, loss: 1.219813585281372
+iteration: 59650, loss: 1.5631436109542847
+iteration: 59700, loss: 1.3947292566299438
+iteration: 59750, loss: 1.4549717903137207
+iteration: 59800, loss: 1.6802924871444702
+iteration: 59850, loss: 1.47346031665802
+iteration: 59900, loss: 1.997105598449707
+iteration: 59950, loss: 1.280390977859497
+iteration: 60000, loss: 2.302824020385742
+iteration: 60050, loss: 1.2890766859054565
+iteration: 60100, loss: 1.064901351928711
+iteration: 60150, loss: 1.7425177097320557
+iteration: 60200, loss: 1.4256960153579712
+iteration: 60250, loss: 1.6020469665527344
+iteration: 60300, loss: 1.2955037355422974
+iteration: 60350, loss: 1.2096850872039795
+iteration: 60400, loss: 1.867549180984497
+iteration: 60450, loss: 1.2357643842697144
+iteration: 60500, loss: 1.6349989175796509
+iteration: 60550, loss: 1.2141993045806885
+iteration: 60600, loss: 1.7561169862747192
+iteration: 60650, loss: 1.190675973892212
+iteration: 60700, loss: 1.6600648164749146
+iteration: 60750, loss: 1.622029423713684
+epoch 45, loss: 1.5017915054436777
+epoch 46
+iteration: 60800, loss: 1.359906554222107
+iteration: 60850, loss: 1.714139699935913
+iteration: 60900, loss: 1.6268209218978882
+iteration: 60950, loss: 1.470741868019104
+iteration: 61000, loss: 1.2846217155456543
+iteration: 61050, loss: 1.4730302095413208
+iteration: 61100, loss: 1.5187654495239258
+iteration: 61150, loss: 1.4022802114486694
+iteration: 61200, loss: 0.959358274936676
+iteration: 61250, loss: 1.3219932317733765
+iteration: 61300, loss: 1.1683070659637451
+iteration: 61350, loss: 1.7473832368850708
+iteration: 61400, loss: 0.9616488814353943
+iteration: 61450, loss: 1.6410554647445679
+iteration: 61500, loss: 1.646061658859253
+iteration: 61550, loss: 1.6944788694381714
+iteration: 61600, loss: 1.3152310848236084
+iteration: 61650, loss: 1.4278416633605957
+iteration: 61700, loss: 1.9216771125793457
+iteration: 61750, loss: 1.64861261844635
+iteration: 61800, loss: 2.153064489364624
+iteration: 61850, loss: 2.4981117248535156
+iteration: 61900, loss: 1.5074838399887085
+iteration: 61950, loss: 1.148742914199829
+iteration: 62000, loss: 1.2353969812393188
+iteration: 62050, loss: 1.989513635635376
+epoch 46, loss: 1.4928109891705617
+epoch 47
+iteration: 62100, loss: 1.624510645866394
+iteration: 62150, loss: 2.3889780044555664
+iteration: 62200, loss: 1.290143609046936
+iteration: 62250, loss: 1.4585787057876587
+iteration: 62300, loss: 1.365077257156372
+iteration: 62350, loss: 1.366962194442749
+iteration: 62400, loss: 1.8947954177856445
+iteration: 62450, loss: 1.3253710269927979
+iteration: 62500, loss: 1.0341073274612427
+iteration: 62550, loss: 1.4635751247406006
+iteration: 62600, loss: 1.6946946382522583
+iteration: 62650, loss: 1.8595433235168457
+iteration: 62700, loss: 1.3990858793258667
+iteration: 62750, loss: 1.4896005392074585
+iteration: 62800, loss: 1.6285934448242188
+iteration: 62850, loss: 1.4840022325515747
+iteration: 62900, loss: 1.7027194499969482
+iteration: 62950, loss: 1.5769391059875488
+iteration: 63000, loss: 1.2009038925170898
+iteration: 63050, loss: 1.759324312210083
+iteration: 63100, loss: 1.623840570449829
+iteration: 63150, loss: 1.4065477848052979
+iteration: 63200, loss: 1.525425910949707
+iteration: 63250, loss: 1.4045332670211792
+iteration: 63300, loss: 1.4897503852844238
+iteration: 63350, loss: 1.336197853088379
+iteration: 63400, loss: 1.5194242000579834
+epoch 47, loss: 1.49657744422992
+epoch 48
+iteration: 63450, loss: 1.670219898223877
+iteration: 63500, loss: 1.0422993898391724
+iteration: 63550, loss: 1.3203353881835938
+iteration: 63600, loss: 1.5027439594268799
+iteration: 63650, loss: 1.3656961917877197
+iteration: 63700, loss: 1.7581197023391724
+iteration: 63750, loss: 1.610169768333435
+iteration: 63800, loss: 1.3965058326721191
+iteration: 63850, loss: 1.7701694965362549
+iteration: 63900, loss: 1.0258299112319946
+iteration: 63950, loss: 1.6190968751907349
+iteration: 64000, loss: 1.511749267578125
+iteration: 64050, loss: 1.3664095401763916
+iteration: 64100, loss: 1.726036548614502
+iteration: 64150, loss: 1.5831680297851562
+iteration: 64200, loss: 1.7259361743927002
+iteration: 64250, loss: 1.6542779207229614
+iteration: 64300, loss: 1.1631717681884766
+iteration: 64350, loss: 1.410860300064087
+iteration: 64400, loss: 1.8664324283599854
+iteration: 64450, loss: 2.2403359413146973
+iteration: 64500, loss: 1.3682645559310913
+iteration: 64550, loss: 1.143784523010254
+iteration: 64600, loss: 1.3745020627975464
+iteration: 64650, loss: 1.4875805377960205
+iteration: 64700, loss: 0.9791792035102844
+epoch 48, loss: 1.4814688220606058
+epoch 49
+iteration: 64750, loss: 1.5486338138580322
+iteration: 64800, loss: 1.3217906951904297
+iteration: 64850, loss: 1.5218379497528076
+iteration: 64900, loss: 1.7707774639129639
+iteration: 64950, loss: 1.4281857013702393
+iteration: 65000, loss: 1.227147102355957
+iteration: 65050, loss: 1.5904593467712402
+iteration: 65100, loss: 1.2954553365707397
+iteration: 65150, loss: 1.4378283023834229
+iteration: 65200, loss: 1.0730568170547485
+iteration: 65250, loss: 1.3096425533294678
+iteration: 65300, loss: 1.604405164718628
+iteration: 65350, loss: 0.9479990601539612
+iteration: 65400, loss: 1.5224683284759521
+iteration: 65450, loss: 1.1609607934951782
+iteration: 65500, loss: 1.2494051456451416
+iteration: 65550, loss: 1.766446828842163
+iteration: 65600, loss: 1.1559501886367798
+iteration: 65650, loss: 1.283618688583374
+iteration: 65700, loss: 1.540389060974121
+iteration: 65750, loss: 1.624367117881775
+iteration: 65800, loss: 1.4757527112960815
+iteration: 65850, loss: 1.3274147510528564
+iteration: 65900, loss: 1.2764976024627686
+iteration: 65950, loss: 1.2991565465927124
+iteration: 66000, loss: 1.6097896099090576
+iteration: 66050, loss: 1.6074460744857788
+epoch 49, loss: 1.491254298012552
+epoch 50
+iteration: 66100, loss: 1.2133815288543701
+iteration: 66150, loss: 1.2903485298156738
+iteration: 66200, loss: 1.9245916604995728
+iteration: 66250, loss: 1.9685367345809937
+iteration: 66300, loss: 1.1643145084381104
+iteration: 66350, loss: 1.2795783281326294
+iteration: 66400, loss: 1.1955686807632446
+iteration: 66450, loss: 1.2230864763259888
+iteration: 66500, loss: 1.6277446746826172
+iteration: 66550, loss: 1.8266037702560425
+iteration: 66600, loss: 1.3846971988677979
+iteration: 66650, loss: 1.4547710418701172
+iteration: 66700, loss: 1.842681646347046
+iteration: 66750, loss: 1.3298267126083374
+iteration: 66800, loss: 1.73268461227417
+iteration: 66850, loss: 1.5138533115386963
+iteration: 66900, loss: 1.8039289712905884
+iteration: 66950, loss: 0.9822813272476196
+iteration: 67000, loss: 1.3686648607254028
+iteration: 67050, loss: 1.2317063808441162
+iteration: 67100, loss: 1.3019500970840454
+iteration: 67150, loss: 1.56023108959198
+iteration: 67200, loss: 1.6028579473495483
+iteration: 67250, loss: 1.28096604347229
+iteration: 67300, loss: 1.5152703523635864
+iteration: 67350, loss: 1.4954975843429565
+epoch 50, loss: 1.484152540353073
+epoch 51
+iteration: 67400, loss: 1.2797093391418457
+iteration: 67450, loss: 1.7255192995071411
+iteration: 67500, loss: 1.1923755407333374
+iteration: 67550, loss: 1.2393901348114014
+iteration: 67600, loss: 1.3716068267822266
+iteration: 67650, loss: 1.5727885961532593
+iteration: 67700, loss: 1.7337424755096436
+iteration: 67750, loss: 1.7032502889633179
+iteration: 67800, loss: 1.7499490976333618
+iteration: 67850, loss: 1.4090442657470703
+iteration: 67900, loss: 1.8248133659362793
+iteration: 67950, loss: 2.113874912261963
+iteration: 68000, loss: 1.5642735958099365
+iteration: 68050, loss: 1.108769416809082
+iteration: 68100, loss: 1.6373507976531982
+iteration: 68150, loss: 1.3496103286743164
+iteration: 68200, loss: 1.5459015369415283
+iteration: 68250, loss: 1.7434895038604736
+iteration: 68300, loss: 1.328289270401001
+iteration: 68350, loss: 1.9406282901763916
+iteration: 68400, loss: 1.7171365022659302
+iteration: 68450, loss: 1.4933315515518188
+iteration: 68500, loss: 1.0244513750076294
+iteration: 68550, loss: 1.8040932416915894
+iteration: 68600, loss: 1.8018640279769897
+iteration: 68650, loss: 1.0550075769424438
+epoch 51, loss: 1.4811272095145205
+epoch 52
+iteration: 68700, loss: 1.3399232625961304
+iteration: 68750, loss: 1.4332646131515503
+iteration: 68800, loss: 1.1876170635223389
+iteration: 68850, loss: 1.2866430282592773
+iteration: 68900, loss: 1.366839051246643
+iteration: 68950, loss: 1.2333483695983887
+iteration: 69000, loss: 1.4725496768951416
+iteration: 69050, loss: 1.5813958644866943
+iteration: 69100, loss: 1.5539402961730957
+iteration: 69150, loss: 1.1339607238769531
+iteration: 69200, loss: 1.249266505241394
+iteration: 69250, loss: 1.3345755338668823
+iteration: 69300, loss: 1.6436086893081665
+iteration: 69350, loss: 1.3523893356323242
+iteration: 69400, loss: 1.1831202507019043
+iteration: 69450, loss: 1.2109543085098267
+iteration: 69500, loss: 1.2522071599960327
+iteration: 69550, loss: 1.0988115072250366
+iteration: 69600, loss: 1.2656837701797485
+iteration: 69650, loss: 1.454490303993225
+iteration: 69700, loss: 1.4028445482254028
+iteration: 69750, loss: 1.375765323638916
+iteration: 69800, loss: 1.47427499294281
+iteration: 69850, loss: 1.4360774755477905
+iteration: 69900, loss: 1.2349565029144287
+iteration: 69950, loss: 1.9107999801635742
+iteration: 70000, loss: 1.7906979322433472
+epoch 52, loss: 1.4770523046928412
+epoch 53
+iteration: 70050, loss: 1.5677474737167358
+iteration: 70100, loss: 1.740502119064331
+iteration: 70150, loss: 1.6037054061889648
+iteration: 70200, loss: 1.5410515069961548
+iteration: 70250, loss: 1.287886142730713
+iteration: 70300, loss: 1.4210323095321655
+iteration: 70350, loss: 1.135788917541504
+iteration: 70400, loss: 1.4235258102416992
+iteration: 70450, loss: 1.0130876302719116
+iteration: 70500, loss: 1.3804595470428467
+iteration: 70550, loss: 1.4266297817230225
+iteration: 70600, loss: 1.3565528392791748
+iteration: 70650, loss: 1.1705056428909302
+iteration: 70700, loss: 1.5832315683364868
+iteration: 70750, loss: 1.6794816255569458
+iteration: 70800, loss: 1.615078330039978
+iteration: 70850, loss: 1.202298879623413
+iteration: 70900, loss: 2.027642011642456
+iteration: 70950, loss: 1.6512434482574463
+iteration: 71000, loss: 1.3934416770935059
+iteration: 71050, loss: 2.613717794418335
+iteration: 71100, loss: 1.0684125423431396
+iteration: 71150, loss: 1.5304069519042969
+iteration: 71200, loss: 2.028076410293579
+iteration: 71250, loss: 1.3515712022781372
+iteration: 71300, loss: 1.4783188104629517
+epoch 53, loss: 1.4684847552931974
+epoch 54
+iteration: 71350, loss: 1.498460054397583
+iteration: 71400, loss: 1.5842443704605103
+iteration: 71450, loss: 2.1959989070892334
+iteration: 71500, loss: 1.5608038902282715
+iteration: 71550, loss: 1.764520525932312
+iteration: 71600, loss: 1.0647704601287842
+iteration: 71650, loss: 1.584206461906433
+iteration: 71700, loss: 1.4910447597503662
+iteration: 71750, loss: 1.0590808391571045
+iteration: 71800, loss: 1.7120323181152344
+iteration: 71850, loss: 2.0284945964813232
+iteration: 71900, loss: 1.6573233604431152
+iteration: 71950, loss: 1.2159912586212158
+iteration: 72000, loss: 1.1546481847763062
+iteration: 72050, loss: 1.993615984916687
+iteration: 72100, loss: 1.7076408863067627
+iteration: 72150, loss: 1.2513288259506226
+iteration: 72200, loss: 2.2051072120666504
+iteration: 72250, loss: 1.1943637132644653
+iteration: 72300, loss: 1.3223220109939575
+iteration: 72350, loss: 1.3140054941177368
+iteration: 72400, loss: 1.4641698598861694
+iteration: 72450, loss: 2.024876594543457
+iteration: 72500, loss: 1.3189125061035156
+iteration: 72550, loss: 0.986665666103363
+iteration: 72600, loss: 1.2459712028503418
+iteration: 72650, loss: 1.4593089818954468
+epoch 54, loss: 1.4703741163833026
+epoch 55
+iteration: 72700, loss: 1.2764737606048584
+iteration: 72750, loss: 1.6001648902893066
+iteration: 72800, loss: 1.5816034078598022
+iteration: 72850, loss: 2.1845266819000244
+iteration: 72900, loss: 1.4653717279434204
+iteration: 72950, loss: 1.009423017501831
+iteration: 73000, loss: 1.2416667938232422
+iteration: 73050, loss: 1.6694201231002808
+iteration: 73100, loss: 1.365861177444458
+iteration: 73150, loss: 1.5882155895233154
+iteration: 73200, loss: 1.3671096563339233
+iteration: 73250, loss: 2.201706647872925
+iteration: 73300, loss: 1.3278388977050781
+iteration: 73350, loss: 1.372665286064148
+iteration: 73400, loss: 2.4175171852111816
+iteration: 73450, loss: 1.555435061454773
+iteration: 73500, loss: 1.7735968828201294
+iteration: 73550, loss: 1.2060141563415527
+iteration: 73600, loss: 1.3276734352111816
+iteration: 73650, loss: 1.2196974754333496
+iteration: 73700, loss: 1.1919293403625488
+iteration: 73750, loss: 1.959808111190796
+iteration: 73800, loss: 1.2118898630142212
+iteration: 73850, loss: 1.5021603107452393
+iteration: 73900, loss: 1.8009955883026123
+iteration: 73950, loss: 1.3324077129364014
+epoch 55, loss: 1.4721586214334421
+epoch 56
+iteration: 74000, loss: 2.216094493865967
+iteration: 74050, loss: 1.1961238384246826
+iteration: 74100, loss: 1.265934705734253
+iteration: 74150, loss: 1.1693133115768433
+iteration: 74200, loss: 1.1560231447219849
+iteration: 74250, loss: 1.6942307949066162
+iteration: 74300, loss: 1.1754810810089111
+iteration: 74350, loss: 1.618985891342163
+iteration: 74400, loss: 1.5893737077713013
+iteration: 74450, loss: 1.4678224325180054
+iteration: 74500, loss: 1.6912485361099243
+iteration: 74550, loss: 1.7485555410385132
+iteration: 74600, loss: 1.2091290950775146
+iteration: 74650, loss: 1.249923586845398
+iteration: 74700, loss: 1.7118971347808838
+iteration: 74750, loss: 1.7494453191757202
+iteration: 74800, loss: 1.0789790153503418
+iteration: 74850, loss: 1.1649961471557617
+iteration: 74900, loss: 1.8650741577148438
+iteration: 74950, loss: 2.46635365486145
+iteration: 75000, loss: 1.6783263683319092
+iteration: 75050, loss: 1.6797986030578613
+iteration: 75100, loss: 1.3268826007843018
+iteration: 75150, loss: 1.4321105480194092
+iteration: 75200, loss: 1.643825650215149
+iteration: 75250, loss: 1.2825570106506348
+epoch 56, loss: 1.4643870780461221
+epoch 57
+iteration: 75300, loss: 1.1013091802597046
+iteration: 75350, loss: 1.191584587097168
+iteration: 75400, loss: 1.5125738382339478
+iteration: 75450, loss: 1.6031670570373535
+iteration: 75500, loss: 1.8989055156707764
+iteration: 75550, loss: 1.9238334894180298
+iteration: 75600, loss: 1.604271411895752
+iteration: 75650, loss: 1.3828712701797485
+iteration: 75700, loss: 1.8875571489334106
+iteration: 75750, loss: 1.2875685691833496
+iteration: 75800, loss: 1.3861128091812134
+iteration: 75850, loss: 1.2434360980987549
+iteration: 75900, loss: 1.2494020462036133
+iteration: 75950, loss: 1.2143367528915405
+iteration: 76000, loss: 2.00964617729187
+iteration: 76050, loss: 1.6210970878601074
+iteration: 76100, loss: 1.3229900598526
+iteration: 76150, loss: 1.2872509956359863
+iteration: 76200, loss: 1.455645203590393
+iteration: 76250, loss: 1.4555999040603638
+iteration: 76300, loss: 1.070762276649475
+iteration: 76350, loss: 1.4553755521774292
+iteration: 76400, loss: 1.6576632261276245
+iteration: 76450, loss: 1.2844306230545044
+iteration: 76500, loss: 2.4522833824157715
+iteration: 76550, loss: 1.2326889038085938
+iteration: 76600, loss: 1.3748527765274048
+epoch 57, loss: 1.4571019032820285
+epoch 58
+iteration: 76650, loss: 1.7901368141174316
+iteration: 76700, loss: 1.3014261722564697
+iteration: 76750, loss: 1.4012302160263062
+iteration: 76800, loss: 1.3511213064193726
+iteration: 76850, loss: 1.3489457368850708
+iteration: 76900, loss: 1.3171159029006958
+iteration: 76950, loss: 1.8094558715820312
+iteration: 77000, loss: 1.7983709573745728
+iteration: 77050, loss: 1.9780972003936768
+iteration: 77100, loss: 1.8560903072357178
+iteration: 77150, loss: 1.4599950313568115
+iteration: 77200, loss: 1.3805465698242188
+iteration: 77250, loss: 1.7162247896194458
+iteration: 77300, loss: 1.301558017730713
+iteration: 77350, loss: 1.492286205291748
+iteration: 77400, loss: 1.3264918327331543
+iteration: 77450, loss: 1.4549314975738525
+iteration: 77500, loss: 1.505821704864502
+iteration: 77550, loss: 1.2862625122070312
+iteration: 77600, loss: 2.0537331104278564
+iteration: 77650, loss: 1.1479824781417847
+iteration: 77700, loss: 1.8197065591812134
+iteration: 77750, loss: 1.3572652339935303
+iteration: 77800, loss: 1.2353522777557373
+iteration: 77850, loss: 1.4153043031692505
+iteration: 77900, loss: 2.2094905376434326
+epoch 58, loss: 1.462271199140666
+epoch 59
+iteration: 77950, loss: 1.3973197937011719
+iteration: 78000, loss: 1.14530611038208
+iteration: 78050, loss: 1.119356632232666
+iteration: 78100, loss: 1.4961729049682617
+iteration: 78150, loss: 1.3454651832580566
+iteration: 78200, loss: 1.1390389204025269
+iteration: 78250, loss: 1.083290696144104
+iteration: 78300, loss: 1.8995522260665894
+iteration: 78350, loss: 1.3214997053146362
+iteration: 78400, loss: 1.3020288944244385
+iteration: 78450, loss: 1.7007536888122559
+iteration: 78500, loss: 1.2979440689086914
+iteration: 78550, loss: 1.2428942918777466
+iteration: 78600, loss: 1.9249939918518066
+iteration: 78650, loss: 1.5200505256652832
+iteration: 78700, loss: 1.4945799112319946
+iteration: 78750, loss: 1.5874645709991455
+iteration: 78800, loss: 1.1214065551757812
+iteration: 78850, loss: 1.2087382078170776
+iteration: 78900, loss: 1.4692323207855225
+iteration: 78950, loss: 1.6392520666122437
+iteration: 79000, loss: 1.250252366065979
+iteration: 79050, loss: 1.7352358102798462
+iteration: 79100, loss: 1.544983148574829
+iteration: 79150, loss: 1.3632124662399292
+iteration: 79200, loss: 2.0641913414001465
+iteration: 79250, loss: 1.1892176866531372
+epoch 59, loss: 1.4486366996025295
+epoch 60
+iteration: 79300, loss: 1.7953839302062988
+iteration: 79350, loss: 1.6731618642807007
+iteration: 79400, loss: 1.2624409198760986
+iteration: 79450, loss: 1.415450096130371
+iteration: 79500, loss: 0.9361765384674072
+iteration: 79550, loss: 1.4248626232147217
+iteration: 79600, loss: 1.2495635747909546
+iteration: 79650, loss: 1.2745716571807861
+iteration: 79700, loss: 1.0249664783477783
+iteration: 79750, loss: 1.5013153553009033
+iteration: 79800, loss: 1.2816627025604248
+iteration: 79850, loss: 1.3797612190246582
+iteration: 79900, loss: 1.3918343782424927
+iteration: 79950, loss: 2.1517181396484375
+iteration: 80000, loss: 1.0887563228607178
+iteration: 80050, loss: 1.2731329202651978
+iteration: 80100, loss: 1.4899115562438965
+iteration: 80150, loss: 1.3198319673538208
+iteration: 80200, loss: 1.0428802967071533
+iteration: 80250, loss: 1.277345061302185
+iteration: 80300, loss: 1.567406415939331
+iteration: 80350, loss: 1.7442876100540161
+iteration: 80400, loss: 1.3857849836349487
+iteration: 80450, loss: 1.2102731466293335
+iteration: 80500, loss: 1.2373489141464233
+iteration: 80550, loss: 1.3771088123321533
+epoch 60, loss: 1.4433180802705272
+epoch 61
+iteration: 80600, loss: 1.254371166229248
+iteration: 80650, loss: 1.2286444902420044
+iteration: 80700, loss: 1.519376277923584
+iteration: 80750, loss: 1.3430813550949097
+iteration: 80800, loss: 1.3548954725265503
+iteration: 80850, loss: 1.6267412900924683
+iteration: 80900, loss: 1.5549969673156738
+iteration: 80950, loss: 1.6020082235336304
+iteration: 81000, loss: 1.3248807191848755
+iteration: 81050, loss: 1.087019443511963
+iteration: 81100, loss: 1.834275722503662
+iteration: 81150, loss: 1.111067771911621
+iteration: 81200, loss: 1.360637903213501
+iteration: 81250, loss: 1.6913632154464722
+iteration: 81300, loss: 1.6391693353652954
+iteration: 81350, loss: 1.4532127380371094
+iteration: 81400, loss: 1.3769539594650269
+iteration: 81450, loss: 1.9759753942489624
+iteration: 81500, loss: 1.2041471004486084
+iteration: 81550, loss: 1.725848913192749
+iteration: 81600, loss: 1.3350765705108643
+iteration: 81650, loss: 1.320897102355957
+iteration: 81700, loss: 1.8999289274215698
+iteration: 81750, loss: 1.410928726196289
+iteration: 81800, loss: 1.6044808626174927
+iteration: 81850, loss: 1.6410653591156006
+iteration: 81900, loss: 1.4991999864578247
+epoch 61, loss: 1.4461549201322932
+epoch 62
+iteration: 81950, loss: 1.3339489698410034
+iteration: 82000, loss: 1.784727931022644
+iteration: 82050, loss: 1.4990184307098389
+iteration: 82100, loss: 1.6696457862854004
+iteration: 82150, loss: 1.6426126956939697
+iteration: 82200, loss: 1.919332504272461
+iteration: 82250, loss: 1.5328255891799927
+iteration: 82300, loss: 1.3270610570907593
+iteration: 82350, loss: 1.34474515914917
+iteration: 82400, loss: 1.3023699522018433
+iteration: 82450, loss: 0.8580583930015564
+iteration: 82500, loss: 1.3690942525863647
+iteration: 82550, loss: 1.1829863786697388
+iteration: 82600, loss: 0.9422791600227356
+iteration: 82650, loss: 1.1125811338424683
+iteration: 82700, loss: 1.4400254487991333
+iteration: 82750, loss: 1.2562469244003296
+iteration: 82800, loss: 1.124515414237976
+iteration: 82850, loss: 1.5652204751968384
+iteration: 82900, loss: 1.04083251953125
+iteration: 82950, loss: 1.4651591777801514
+iteration: 83000, loss: 1.1246963739395142
+iteration: 83050, loss: 1.6548817157745361
+iteration: 83100, loss: 1.7071055173873901
+iteration: 83150, loss: 1.5084959268569946
+iteration: 83200, loss: 1.3208045959472656
+epoch 62, loss: 1.4422515729743575
+epoch 63
+iteration: 83250, loss: 1.4727951288223267
+iteration: 83300, loss: 1.9983810186386108
+iteration: 83350, loss: 1.0542659759521484
+iteration: 83400, loss: 1.4122817516326904
+iteration: 83450, loss: 1.3175480365753174
+iteration: 83500, loss: 1.2669533491134644
+iteration: 83550, loss: 1.6888912916183472
+iteration: 83600, loss: 1.3874632120132446
+iteration: 83650, loss: 1.30413019657135
+iteration: 83700, loss: 1.260788083076477
+iteration: 83750, loss: 1.780792236328125
+iteration: 83800, loss: 1.8432377576828003
+iteration: 83850, loss: 1.6868232488632202
+iteration: 83900, loss: 1.3648416996002197
+iteration: 83950, loss: 1.5032799243927002
+iteration: 84000, loss: 1.3018698692321777
+iteration: 84050, loss: 1.3944768905639648
+iteration: 84100, loss: 1.5590531826019287
+iteration: 84150, loss: 1.9120423793792725
+iteration: 84200, loss: 2.2191853523254395
+iteration: 84250, loss: 1.4400920867919922
+iteration: 84300, loss: 1.4943788051605225
+iteration: 84350, loss: 1.190598726272583
+iteration: 84400, loss: 2.4179842472076416
+iteration: 84450, loss: 1.6900182962417603
+iteration: 84500, loss: 1.6545606851577759
+epoch 63, loss: 1.4376769754270844
+epoch 64
+iteration: 84550, loss: 1.384514331817627
+iteration: 84600, loss: 1.218322992324829
+iteration: 84650, loss: 1.7820651531219482
+iteration: 84700, loss: 1.4396675825119019
+iteration: 84750, loss: 1.1287106275558472
+iteration: 84800, loss: 1.7598589658737183
+iteration: 84850, loss: 1.2947044372558594
+iteration: 84900, loss: 1.1601837873458862
+iteration: 84950, loss: 1.3052587509155273
+iteration: 85000, loss: 1.3084383010864258
+iteration: 85050, loss: 1.2714486122131348
+iteration: 85100, loss: 1.310198187828064
+iteration: 85150, loss: 1.2718780040740967
+iteration: 85200, loss: 1.5536673069000244
+iteration: 85250, loss: 1.4377954006195068
+iteration: 85300, loss: 1.231964111328125
+iteration: 85350, loss: 1.935882568359375
+iteration: 85400, loss: 1.6457027196884155
+iteration: 85450, loss: 1.3524844646453857
+iteration: 85500, loss: 1.4596503973007202
+iteration: 85550, loss: 1.819601058959961
+iteration: 85600, loss: 2.025906801223755
+iteration: 85650, loss: 1.025901436805725
+iteration: 85700, loss: 1.5695942640304565
+iteration: 85750, loss: 1.5847407579421997
+iteration: 85800, loss: 1.210005521774292
+iteration: 85850, loss: 1.1597390174865723
+epoch 64, loss: 1.4341493136948196
+epoch 65
+iteration: 85900, loss: 1.4500374794006348
+iteration: 85950, loss: 1.1365772485733032
+iteration: 86000, loss: 1.8042371273040771
+iteration: 86050, loss: 0.8421931266784668
+iteration: 86100, loss: 1.191603422164917
+iteration: 86150, loss: 1.0559583902359009
+iteration: 86200, loss: 1.6618423461914062
+iteration: 86250, loss: 1.0701783895492554
+iteration: 86300, loss: 1.3105013370513916
+iteration: 86350, loss: 1.49884831905365
+iteration: 86400, loss: 1.4682247638702393
+iteration: 86450, loss: 1.5805238485336304
+iteration: 86500, loss: 1.4059233665466309
+iteration: 86550, loss: 1.227042317390442
+iteration: 86600, loss: 1.5045000314712524
+iteration: 86650, loss: 1.585504412651062
+iteration: 86700, loss: 1.1194096803665161
+iteration: 86750, loss: 1.325423002243042
+iteration: 86800, loss: 1.4556291103363037
+iteration: 86850, loss: 1.6053876876831055
+iteration: 86900, loss: 1.6920629739761353
+iteration: 86950, loss: 1.1377164125442505
+iteration: 87000, loss: 1.0480433702468872
+iteration: 87050, loss: 1.6602646112442017
+iteration: 87100, loss: 1.2823193073272705
+iteration: 87150, loss: 1.2024582624435425
+epoch 65, loss: 1.4352265010606373
+epoch 66
+iteration: 87200, loss: 1.5011335611343384
+iteration: 87250, loss: 2.0597872734069824
+iteration: 87300, loss: 1.4776118993759155
+iteration: 87350, loss: 1.5000808238983154
+iteration: 87400, loss: 1.5724517107009888
+iteration: 87450, loss: 1.5398715734481812
+iteration: 87500, loss: 1.2826595306396484
+iteration: 87550, loss: 1.5682896375656128
+iteration: 87600, loss: 1.384948492050171
+iteration: 87650, loss: 1.7531013488769531
+iteration: 87700, loss: 2.041759967803955
+iteration: 87750, loss: 1.4930390119552612
+iteration: 87800, loss: 1.7357721328735352
+iteration: 87850, loss: 1.1931332349777222
+iteration: 87900, loss: 1.0842753648757935
+iteration: 87950, loss: 1.7246227264404297
+iteration: 88000, loss: 1.1937028169631958
+iteration: 88050, loss: 1.3998193740844727
+iteration: 88100, loss: 1.2212982177734375
+iteration: 88150, loss: 1.4028438329696655
+iteration: 88200, loss: 1.2828938961029053
+iteration: 88250, loss: 1.457360863685608
+iteration: 88300, loss: 1.2694883346557617
+iteration: 88350, loss: 1.1490447521209717
+iteration: 88400, loss: 1.0422104597091675
+iteration: 88450, loss: 1.2617857456207275
+iteration: 88500, loss: 1.547924518585205
+epoch 66, loss: 1.4388685454257615
+epoch 67
+iteration: 88550, loss: 1.2883566617965698
+iteration: 88600, loss: 1.6715621948242188
+iteration: 88650, loss: 1.082565188407898
+iteration: 88700, loss: 1.1234220266342163
+iteration: 88750, loss: 1.3091524839401245
+iteration: 88800, loss: 1.6366115808486938
+iteration: 88850, loss: 1.5770745277404785
+iteration: 88900, loss: 1.5058249235153198
+iteration: 88950, loss: 1.3027641773223877
+iteration: 89000, loss: 1.315201759338379
+iteration: 89050, loss: 1.4783579111099243
+iteration: 89100, loss: 1.1517211198806763
+iteration: 89150, loss: 1.3467398881912231
+iteration: 89200, loss: 2.239844799041748
+iteration: 89250, loss: 1.403194546699524
+iteration: 89300, loss: 1.0464770793914795
+iteration: 89350, loss: 1.4501416683197021
+iteration: 89400, loss: 1.4304381608963013
+iteration: 89450, loss: 1.4085711240768433
+iteration: 89500, loss: 1.8525322675704956
+iteration: 89550, loss: 1.8251498937606812
+iteration: 89600, loss: 1.6547973155975342
+iteration: 89650, loss: 2.0250070095062256
+iteration: 89700, loss: 1.371599793434143
+iteration: 89750, loss: 1.2941079139709473
+iteration: 89800, loss: 1.279605507850647
+epoch 67, loss: 1.4330606354557351
+epoch 68
+iteration: 89850, loss: 1.8682787418365479
+iteration: 89900, loss: 1.279188871383667
+iteration: 89950, loss: 1.1213289499282837
+iteration: 90000, loss: 1.2295191287994385
+iteration: 90050, loss: 1.0546108484268188
+iteration: 90100, loss: 1.6972672939300537
+iteration: 90150, loss: 1.7078907489776611
+iteration: 90200, loss: 1.293629765510559
+iteration: 90250, loss: 1.7144527435302734
+iteration: 90300, loss: 1.4006080627441406
+iteration: 90350, loss: 1.3990799188613892
+iteration: 90400, loss: 1.2796032428741455
+iteration: 90450, loss: 1.8318716287612915
+iteration: 90500, loss: 1.6068980693817139
+iteration: 90550, loss: 1.2772455215454102
+iteration: 90600, loss: 1.1543251276016235
+iteration: 90650, loss: 1.5065661668777466
+iteration: 90700, loss: 1.412231206893921
+iteration: 90750, loss: 1.6687519550323486
+iteration: 90800, loss: 1.218427300453186
+iteration: 90850, loss: 1.282778024673462
+iteration: 90900, loss: 1.2278804779052734
+iteration: 90950, loss: 2.331953525543213
+iteration: 91000, loss: 1.2470591068267822
+iteration: 91050, loss: 1.6093738079071045
+iteration: 91100, loss: 1.6995859146118164
+epoch 68, loss: 1.431443346776033
+epoch 69
+iteration: 91150, loss: 1.3433631658554077
+iteration: 91200, loss: 1.5110485553741455
+iteration: 91250, loss: 1.3730984926223755
+iteration: 91300, loss: 1.308570384979248
+iteration: 91350, loss: 1.4604485034942627
+iteration: 91400, loss: 1.5712074041366577
+iteration: 91450, loss: 1.5166800022125244
+iteration: 91500, loss: 1.331440806388855
+iteration: 91550, loss: 1.4447600841522217
+iteration: 91600, loss: 0.9666696190834045
+iteration: 91650, loss: 1.3598476648330688
+iteration: 91700, loss: 1.4159084558486938
+iteration: 91750, loss: 1.642134189605713
+iteration: 91800, loss: 1.2888972759246826
+iteration: 91850, loss: 1.2243802547454834
+iteration: 91900, loss: 1.286112904548645
+iteration: 91950, loss: 1.464770793914795
+iteration: 92000, loss: 1.5194780826568604
+iteration: 92050, loss: 1.0592951774597168
+iteration: 92100, loss: 1.5716285705566406
+iteration: 92150, loss: 1.1058197021484375
+iteration: 92200, loss: 1.1108269691467285
+iteration: 92250, loss: 1.5770063400268555
+iteration: 92300, loss: 1.2889976501464844
+iteration: 92350, loss: 1.5646069049835205
+iteration: 92400, loss: 1.4054036140441895
+iteration: 92450, loss: 2.3219518661499023
+epoch 69, loss: 1.4229484567127932
+epoch 70
+iteration: 92500, loss: 1.285038948059082
+iteration: 92550, loss: 1.2972939014434814
+iteration: 92600, loss: 1.368664026260376
+iteration: 92650, loss: 1.7472444772720337
+iteration: 92700, loss: 1.169106125831604
+iteration: 92750, loss: 1.5829005241394043
+iteration: 92800, loss: 1.3966633081436157
+iteration: 92850, loss: 1.2194315195083618
+iteration: 92900, loss: 1.4915637969970703
+iteration: 92950, loss: 1.6702848672866821
+iteration: 93000, loss: 1.4664559364318848
+iteration: 93050, loss: 1.5627027750015259
+iteration: 93100, loss: 1.022262454032898
+iteration: 93150, loss: 2.0444090366363525
+iteration: 93200, loss: 1.1012166738510132
+iteration: 93250, loss: 1.0506798028945923
+iteration: 93300, loss: 1.446476936340332
+iteration: 93350, loss: 1.2615993022918701
+iteration: 93400, loss: 1.3544433116912842
+iteration: 93450, loss: 1.3217281103134155
+iteration: 93500, loss: 1.453994870185852
+iteration: 93550, loss: 1.487222671508789
+iteration: 93600, loss: 1.402706265449524
+iteration: 93650, loss: 1.6393600702285767
+iteration: 93700, loss: 1.3059108257293701
+iteration: 93750, loss: 1.2425092458724976
+epoch 70, loss: 1.4148657700873368
+epoch 71
+iteration: 93800, loss: 1.084755301475525
+iteration: 93850, loss: 1.099692940711975
+iteration: 93900, loss: 1.565700650215149
+iteration: 93950, loss: 1.0469975471496582
+iteration: 94000, loss: 1.5626277923583984
+iteration: 94050, loss: 1.3801138401031494
+iteration: 94100, loss: 1.0893272161483765
+iteration: 94150, loss: 1.1641614437103271
+iteration: 94200, loss: 1.1845439672470093
+iteration: 94250, loss: 1.7459068298339844
+iteration: 94300, loss: 1.7559070587158203
+iteration: 94350, loss: 1.6092920303344727
+iteration: 94400, loss: 1.3133585453033447
+iteration: 94450, loss: 1.8018784523010254
+iteration: 94500, loss: 1.2168422937393188
+iteration: 94550, loss: 1.5585410594940186
+iteration: 94600, loss: 1.172798991203308
+iteration: 94650, loss: 1.4085891246795654
+iteration: 94700, loss: 1.4234484434127808
+iteration: 94750, loss: 1.4442410469055176
+iteration: 94800, loss: 1.1304014921188354
+iteration: 94850, loss: 1.885255217552185
+iteration: 94900, loss: 1.3625653982162476
+iteration: 94950, loss: 1.3995604515075684
+iteration: 95000, loss: 0.9719297289848328
+iteration: 95050, loss: 1.6208255290985107
+iteration: 95100, loss: 1.2279881238937378
+epoch 71, loss: 1.4152267639661804
+epoch 72
+iteration: 95150, loss: 1.1150397062301636
+iteration: 95200, loss: 1.2261488437652588
+iteration: 95250, loss: 1.5318928956985474
+iteration: 95300, loss: 1.3560543060302734
+iteration: 95350, loss: 1.3846476078033447
+iteration: 95400, loss: 0.996795117855072
+iteration: 95450, loss: 1.0404525995254517
+iteration: 95500, loss: 1.647153377532959
+iteration: 95550, loss: 1.1307861804962158
+iteration: 95600, loss: 1.4006233215332031
+iteration: 95650, loss: 1.3695958852767944
+iteration: 95700, loss: 1.1679883003234863
+iteration: 95750, loss: 1.1210201978683472
+iteration: 95800, loss: 1.4551903009414673
+iteration: 95850, loss: 2.1279661655426025
+iteration: 95900, loss: 1.1715381145477295
+iteration: 95950, loss: 1.3537849187850952
+iteration: 96000, loss: 1.7419415712356567
+iteration: 96050, loss: 1.0634303092956543
+iteration: 96100, loss: 0.9782641530036926
+iteration: 96150, loss: 1.4234423637390137
+iteration: 96200, loss: 1.3227111101150513
+iteration: 96250, loss: 1.4623687267303467
+iteration: 96300, loss: 1.3822888135910034
+iteration: 96350, loss: 1.3412492275238037
+iteration: 96400, loss: 1.7686495780944824
+epoch 72, loss: 1.4189281035507189
+epoch 73
+iteration: 96450, loss: 1.5044536590576172
+iteration: 96500, loss: 1.3396286964416504
+iteration: 96550, loss: 1.2709577083587646
+iteration: 96600, loss: 1.985081672668457
+iteration: 96650, loss: 1.149272084236145
+iteration: 96700, loss: 1.4084352254867554
+iteration: 96750, loss: 1.1142828464508057
+iteration: 96800, loss: 1.7481499910354614
+iteration: 96850, loss: 1.5983550548553467
+iteration: 96900, loss: 1.247655987739563
+iteration: 96950, loss: 1.2366647720336914
+iteration: 97000, loss: 1.4525420665740967
+iteration: 97050, loss: 1.1787981986999512
+iteration: 97100, loss: 1.5094443559646606
+iteration: 97150, loss: 1.3348939418792725
+iteration: 97200, loss: 1.0901273488998413
+iteration: 97250, loss: 1.1684324741363525
+iteration: 97300, loss: 1.6437510251998901
+iteration: 97350, loss: 1.7354161739349365
+iteration: 97400, loss: 1.3036386966705322
+iteration: 97450, loss: 1.3089088201522827
+iteration: 97500, loss: 1.5051138401031494
+iteration: 97550, loss: 1.2163792848587036
+iteration: 97600, loss: 1.3319677114486694
+iteration: 97650, loss: 1.7641732692718506
+iteration: 97700, loss: 1.7654283046722412
+iteration: 97750, loss: 0.971951425075531
+epoch 73, loss: 1.4084532197737536
+epoch 74
+iteration: 97800, loss: 1.1028437614440918
+iteration: 97850, loss: 1.1543163061141968
+iteration: 97900, loss: 1.3218436241149902
+iteration: 97950, loss: 1.4006441831588745
+iteration: 98000, loss: 1.13889479637146
+iteration: 98050, loss: 1.1915719509124756
+iteration: 98100, loss: 1.1174942255020142
+iteration: 98150, loss: 1.0597245693206787
+iteration: 98200, loss: 1.0388262271881104
+iteration: 98250, loss: 1.294797658920288
+iteration: 98300, loss: 1.5353813171386719
+iteration: 98350, loss: 1.1865705251693726
+iteration: 98400, loss: 1.323953628540039
+iteration: 98450, loss: 1.4189201593399048
+iteration: 98500, loss: 1.2569999694824219
+iteration: 98550, loss: 1.668615698814392
+iteration: 98600, loss: 1.2418701648712158
+iteration: 98650, loss: 1.533390760421753
+iteration: 98700, loss: 1.3074837923049927
+iteration: 98750, loss: 0.9881243705749512
+iteration: 98800, loss: 1.3830891847610474
+iteration: 98850, loss: 1.6299493312835693
+iteration: 98900, loss: 1.0139591693878174
+iteration: 98950, loss: 1.7096099853515625
+iteration: 99000, loss: 1.4466110467910767
+iteration: 99050, loss: 1.0800751447677612
+epoch 74, loss: 1.4005716893169942
+epoch 75
+iteration: 99100, loss: 1.2920283079147339
+iteration: 99150, loss: 1.1336076259613037
+iteration: 99200, loss: 1.7246659994125366
+iteration: 99250, loss: 1.1073395013809204
+iteration: 99300, loss: 1.3766335248947144
+iteration: 99350, loss: 1.3232496976852417
+iteration: 99400, loss: 1.2849622964859009
+iteration: 99450, loss: 1.3905606269836426
+iteration: 99500, loss: 1.311683177947998
+iteration: 99550, loss: 1.0802998542785645
+iteration: 99600, loss: 1.230430006980896
+iteration: 99650, loss: 1.2477437257766724
+iteration: 99700, loss: 1.733083724975586
+iteration: 99750, loss: 1.9615147113800049
+iteration: 99800, loss: 1.1424282789230347
+iteration: 99850, loss: 1.5882412195205688
+iteration: 99900, loss: 1.5999701023101807
+iteration: 99950, loss: 1.5856029987335205
+iteration: 100000, loss: 1.772562026977539
+iteration: 100050, loss: 1.281814694404602
+iteration: 100100, loss: 1.394788384437561
+iteration: 100150, loss: 1.6513670682907104
+iteration: 100200, loss: 1.4554862976074219
+iteration: 100250, loss: 1.4286210536956787
+iteration: 100300, loss: 2.269810438156128
+iteration: 100350, loss: 1.524178147315979
+epoch 75, loss: 1.4025266091104036
+epoch 76
+iteration: 100400, loss: 1.402453899383545
+iteration: 100450, loss: 1.274722933769226
+iteration: 100500, loss: 1.312254786491394
+iteration: 100550, loss: 1.3900023698806763
+iteration: 100600, loss: 1.0088818073272705
+iteration: 100650, loss: 1.5839109420776367
+iteration: 100700, loss: 1.2874701023101807
+iteration: 100750, loss: 1.2244876623153687
+iteration: 100800, loss: 2.0563647747039795
+iteration: 100850, loss: 1.2358829975128174
+iteration: 100900, loss: 1.3368390798568726
+iteration: 100950, loss: 1.4729589223861694
+iteration: 101000, loss: 1.2452855110168457
+iteration: 101050, loss: 1.6086128950119019
+iteration: 101100, loss: 1.2734310626983643
+iteration: 101150, loss: 1.86736261844635
+iteration: 101200, loss: 1.5839310884475708
+iteration: 101250, loss: 1.4120070934295654
+iteration: 101300, loss: 1.3932844400405884
+iteration: 101350, loss: 1.9173736572265625
+iteration: 101400, loss: 1.0328811407089233
+iteration: 101450, loss: 1.4003373384475708
+iteration: 101500, loss: 1.224954605102539
+iteration: 101550, loss: 1.537020206451416
+iteration: 101600, loss: 1.3026602268218994
+iteration: 101650, loss: 1.0829888582229614
+iteration: 101700, loss: 0.9844181537628174
+epoch 76, loss: 1.4107994989054093
+epoch 77
+iteration: 101750, loss: 1.7220640182495117
+iteration: 101800, loss: 1.479539155960083
+iteration: 101850, loss: 1.4354026317596436
+iteration: 101900, loss: 1.995400309562683
+iteration: 101950, loss: 1.721017599105835
+iteration: 102000, loss: 1.5479322671890259
+iteration: 102050, loss: 1.2457001209259033
+iteration: 102100, loss: 1.621130347251892
+iteration: 102150, loss: 1.8722182512283325
+iteration: 102200, loss: 1.4168494939804077
+iteration: 102250, loss: 1.4589661359786987
+iteration: 102300, loss: 0.9932924509048462
+iteration: 102350, loss: 1.442724347114563
+iteration: 102400, loss: 1.3786499500274658
+iteration: 102450, loss: 1.9074794054031372
+iteration: 102500, loss: 1.3487725257873535
+iteration: 102550, loss: 1.116050362586975
+iteration: 102600, loss: 1.4571524858474731
+iteration: 102650, loss: 1.890828013420105
+iteration: 102700, loss: 1.2062253952026367
+iteration: 102750, loss: 1.5230294466018677
+iteration: 102800, loss: 1.3488802909851074
+iteration: 102850, loss: 1.5357192754745483
+iteration: 102900, loss: 1.2028969526290894
+iteration: 102950, loss: 1.3151271343231201
+iteration: 103000, loss: 1.265432596206665
+epoch 77, loss: 1.4008453601017918
+epoch 78
+iteration: 103050, loss: 1.2960970401763916
+iteration: 103100, loss: 1.7589083909988403
+iteration: 103150, loss: 1.6073757410049438
+iteration: 103200, loss: 1.3366361856460571
+iteration: 103250, loss: 1.3454397916793823
+iteration: 103300, loss: 1.7968555688858032
+iteration: 103350, loss: 1.000736117362976
+iteration: 103400, loss: 0.9891249537467957
+iteration: 103450, loss: 1.1332294940948486
+iteration: 103500, loss: 1.5730403661727905
+iteration: 103550, loss: 1.4168460369110107
+iteration: 103600, loss: 1.7521092891693115
+iteration: 103650, loss: 1.549684762954712
+iteration: 103700, loss: 1.625580906867981
+iteration: 103750, loss: 1.8510342836380005
+iteration: 103800, loss: 1.3575025796890259
+iteration: 103850, loss: 1.1741186380386353
+iteration: 103900, loss: 1.4032704830169678
+iteration: 103950, loss: 1.3487827777862549
+iteration: 104000, loss: 1.4071223735809326
+iteration: 104050, loss: 1.7053340673446655
+iteration: 104100, loss: 0.9194560050964355
+iteration: 104150, loss: 1.210362434387207
+iteration: 104200, loss: 1.4347772598266602
+iteration: 104250, loss: 1.9519094228744507
+iteration: 104300, loss: 0.940053403377533
+iteration: 104350, loss: 1.5179744958877563
+epoch 78, loss: 1.401164947056838
+epoch 79
+iteration: 104400, loss: 1.8092244863510132
+iteration: 104450, loss: 1.210371971130371
+iteration: 104500, loss: 1.2999287843704224
+iteration: 104550, loss: 1.2412694692611694
+iteration: 104600, loss: 1.0949547290802002
+iteration: 104650, loss: 0.954471230506897
+iteration: 104700, loss: 1.4091565608978271
+iteration: 104750, loss: 1.362255573272705
+iteration: 104800, loss: 1.0053187608718872
+iteration: 104850, loss: 0.9968730211257935
+iteration: 104900, loss: 1.4258201122283936
+iteration: 104950, loss: 1.7107089757919312
+iteration: 105000, loss: 2.0498881340026855
+iteration: 105050, loss: 1.3107428550720215
+iteration: 105100, loss: 1.3911479711532593
+iteration: 105150, loss: 0.9846031665802002
+iteration: 105200, loss: 1.4662636518478394
+iteration: 105250, loss: 1.588132619857788
+iteration: 105300, loss: 1.0852386951446533
+iteration: 105350, loss: 1.1619759798049927
+iteration: 105400, loss: 1.3895928859710693
+iteration: 105450, loss: 1.472685694694519
+iteration: 105500, loss: 1.3365318775177002
+iteration: 105550, loss: 1.3063786029815674
+iteration: 105600, loss: 1.3951807022094727
+iteration: 105650, loss: 1.4545977115631104
+epoch 79, loss: 1.39744181660063
+epoch 80
+iteration: 105700, loss: 1.6827794313430786
+iteration: 105750, loss: 1.525424838066101
+iteration: 105800, loss: 1.2936069965362549
+iteration: 105850, loss: 1.6114094257354736
+iteration: 105900, loss: 1.4254704713821411
+iteration: 105950, loss: 1.5905150175094604
+iteration: 106000, loss: 1.4298089742660522
+iteration: 106050, loss: 1.8147556781768799
+iteration: 106100, loss: 1.2704485654830933
+iteration: 106150, loss: 1.3850058317184448
+iteration: 106200, loss: 1.502339243888855
+iteration: 106250, loss: 1.4309228658676147
+iteration: 106300, loss: 1.4479150772094727
+iteration: 106350, loss: 1.1617848873138428
+iteration: 106400, loss: 1.2096097469329834
+iteration: 106450, loss: 0.9903818368911743
+iteration: 106500, loss: 1.0420118570327759
+iteration: 106550, loss: 1.6938838958740234
+iteration: 106600, loss: 1.440476417541504
+iteration: 106650, loss: 1.4653668403625488
+iteration: 106700, loss: 1.8318371772766113
+iteration: 106750, loss: 1.7628744840621948
+iteration: 106800, loss: 1.9147045612335205
+iteration: 106850, loss: 1.4427673816680908
+iteration: 106900, loss: 1.4882209300994873
+iteration: 106950, loss: 1.2955811023712158
+iteration: 107000, loss: 1.488528847694397
+epoch 80, loss: 1.3918520242173151
+epoch 81
+iteration: 107050, loss: 1.5404090881347656
+iteration: 107100, loss: 1.2062171697616577
+iteration: 107150, loss: 1.3631517887115479
+iteration: 107200, loss: 1.3776541948318481
+iteration: 107250, loss: 1.8232994079589844
+iteration: 107300, loss: 1.4981410503387451
+iteration: 107350, loss: 1.0319260358810425
+iteration: 107400, loss: 1.1255048513412476
+iteration: 107450, loss: 1.2387080192565918
+iteration: 107500, loss: 1.3305307626724243
+iteration: 107550, loss: 1.0754823684692383
+iteration: 107600, loss: 1.2020140886306763
+iteration: 107650, loss: 1.7865331172943115
+iteration: 107700, loss: 1.161331295967102
+iteration: 107750, loss: 1.3807612657546997
+iteration: 107800, loss: 1.6964902877807617
+iteration: 107850, loss: 1.5450564622879028
+iteration: 107900, loss: 1.6636419296264648
+iteration: 107950, loss: 1.2518523931503296
+iteration: 108000, loss: 1.5331757068634033
+iteration: 108050, loss: 1.1543177366256714
+iteration: 108100, loss: 1.7066377401351929
+iteration: 108150, loss: 1.2365509271621704
+iteration: 108200, loss: 1.2120614051818848
+iteration: 108250, loss: 1.237839937210083
+iteration: 108300, loss: 1.38240385055542
+epoch 81, loss: 1.395330474009013
+epoch 82
+iteration: 108350, loss: 1.214070200920105
+iteration: 108400, loss: 1.3518309593200684
+iteration: 108450, loss: 1.635428547859192
+iteration: 108500, loss: 1.3532814979553223
+iteration: 108550, loss: 1.608489990234375
+iteration: 108600, loss: 1.5088763236999512
+iteration: 108650, loss: 1.4027085304260254
+iteration: 108700, loss: 1.5974743366241455
+iteration: 108750, loss: 1.5252209901809692
+iteration: 108800, loss: 1.777636170387268
+iteration: 108850, loss: 1.4966256618499756
+iteration: 108900, loss: 1.7288854122161865
+iteration: 108950, loss: 1.2797240018844604
+iteration: 109000, loss: 1.2396754026412964
+iteration: 109050, loss: 1.5994795560836792
+iteration: 109100, loss: 1.3133599758148193
+iteration: 109150, loss: 1.699289083480835
+iteration: 109200, loss: 1.3130940198898315
+iteration: 109250, loss: 1.7027777433395386
+iteration: 109300, loss: 1.301591396331787
+iteration: 109350, loss: 1.5874133110046387
+iteration: 109400, loss: 1.3596457242965698
+iteration: 109450, loss: 1.315140724182129
+iteration: 109500, loss: 1.1117653846740723
+iteration: 109550, loss: 0.9516311883926392
+iteration: 109600, loss: 1.2399731874465942
+epoch 82, loss: 1.3978519069776292
+epoch 83
+iteration: 109650, loss: 1.1732151508331299
+iteration: 109700, loss: 1.258365273475647
+iteration: 109750, loss: 1.434269666671753
+iteration: 109800, loss: 1.1214853525161743
+iteration: 109850, loss: 1.56755530834198
+iteration: 109900, loss: 1.2141860723495483
+iteration: 109950, loss: 1.8945366144180298
+iteration: 110000, loss: 1.4182683229446411
+iteration: 110050, loss: 1.6157091856002808
+iteration: 110100, loss: 1.3553466796875
+iteration: 110150, loss: 1.1028387546539307
+iteration: 110200, loss: 1.4708751440048218
+iteration: 110250, loss: 1.3803305625915527
+iteration: 110300, loss: 1.684839129447937
+iteration: 110350, loss: 1.6189128160476685
+iteration: 110400, loss: 1.16631019115448
+iteration: 110450, loss: 1.7903164625167847
+iteration: 110500, loss: 1.2643882036209106
+iteration: 110550, loss: 1.3957295417785645
+iteration: 110600, loss: 1.5187602043151855
+iteration: 110650, loss: 1.9123762845993042
+iteration: 110700, loss: 1.3801344633102417
+iteration: 110750, loss: 1.18773353099823
+iteration: 110800, loss: 1.4070494174957275
+iteration: 110850, loss: 1.1173532009124756
+iteration: 110900, loss: 2.072568416595459
+iteration: 110950, loss: 1.4790849685668945
+epoch 83, loss: 1.4001631374954613
+epoch 84
+iteration: 111000, loss: 1.3464430570602417
+iteration: 111050, loss: 1.7257237434387207
+iteration: 111100, loss: 0.9966526627540588
+iteration: 111150, loss: 1.3796147108078003
+iteration: 111200, loss: 1.4213273525238037
+iteration: 111250, loss: 1.706753134727478
+iteration: 111300, loss: 1.4888547658920288
+iteration: 111350, loss: 1.1999038457870483
+iteration: 111400, loss: 1.1876263618469238
+iteration: 111450, loss: 1.583262324333191
+iteration: 111500, loss: 1.2542377710342407
+iteration: 111550, loss: 1.4458117485046387
+iteration: 111600, loss: 1.571416974067688
+iteration: 111650, loss: 1.1862329244613647
+iteration: 111700, loss: 1.6276963949203491
+iteration: 111750, loss: 1.6068172454833984
+iteration: 111800, loss: 1.3803921937942505
+iteration: 111850, loss: 1.2111650705337524
+iteration: 111900, loss: 1.658018946647644
+iteration: 111950, loss: 1.0735247135162354
+iteration: 112000, loss: 1.6965938806533813
+iteration: 112050, loss: 1.966554045677185
+iteration: 112100, loss: 1.2270300388336182
+iteration: 112150, loss: 1.415004014968872
+iteration: 112200, loss: 1.7840121984481812
+iteration: 112250, loss: 1.0140389204025269
+epoch 84, loss: 1.3923276461400056
+epoch 85
+iteration: 112300, loss: 1.0812498331069946
+iteration: 112350, loss: 1.6076247692108154
+iteration: 112400, loss: 1.7167836427688599
+iteration: 112450, loss: 1.2519246339797974
+iteration: 112500, loss: 1.5289889574050903
+iteration: 112550, loss: 1.5829999446868896
+iteration: 112600, loss: 1.3391462564468384
+iteration: 112650, loss: 1.302812933921814
+iteration: 112700, loss: 1.3100992441177368
+iteration: 112750, loss: 1.2343119382858276
+iteration: 112800, loss: 0.9144264459609985
+iteration: 112850, loss: 1.0483968257904053
+iteration: 112900, loss: 1.0605671405792236
+iteration: 112950, loss: 1.2799322605133057
+iteration: 113000, loss: 1.5321383476257324
+iteration: 113050, loss: 1.5516676902770996
+iteration: 113100, loss: 1.4145201444625854
+iteration: 113150, loss: 1.1526457071304321
+iteration: 113200, loss: 1.42615807056427
+iteration: 113250, loss: 1.555012583732605
+iteration: 113300, loss: 1.162927269935608
+iteration: 113350, loss: 1.4973357915878296
+iteration: 113400, loss: 0.9921972155570984
+iteration: 113450, loss: 1.5054515600204468
+iteration: 113500, loss: 1.3548823595046997
+iteration: 113550, loss: 1.271691918373108
+iteration: 113600, loss: 1.4429271221160889
+epoch 85, loss: 1.3893144847090333
+epoch 86
+iteration: 113650, loss: 1.433639407157898
+iteration: 113700, loss: 1.1991726160049438
+iteration: 113750, loss: 1.2576805353164673
+iteration: 113800, loss: 1.801588773727417
+iteration: 113850, loss: 1.0117353200912476
+iteration: 113900, loss: 1.746439814567566
+iteration: 113950, loss: 1.0597636699676514
+iteration: 114000, loss: 1.5989216566085815
+iteration: 114050, loss: 1.5123835802078247
+iteration: 114100, loss: 1.4334200620651245
+iteration: 114150, loss: 1.149863362312317
+iteration: 114200, loss: 1.2363413572311401
+iteration: 114250, loss: 1.41474187374115
+iteration: 114300, loss: 1.3761051893234253
+iteration: 114350, loss: 1.4975619316101074
+iteration: 114400, loss: 1.5340652465820312
+iteration: 114450, loss: 1.3986188173294067
+iteration: 114500, loss: 1.2364020347595215
+iteration: 114550, loss: 1.167618751525879
+iteration: 114600, loss: 1.319606900215149
+iteration: 114650, loss: 1.534387469291687
+iteration: 114700, loss: 1.2953275442123413
+iteration: 114750, loss: 1.2347651720046997
+iteration: 114800, loss: 1.3896284103393555
+iteration: 114850, loss: 1.2500425577163696
+iteration: 114900, loss: 1.330724835395813
+epoch 86, loss: 1.3796948372922986
+epoch 87
+iteration: 114950, loss: 1.336245059967041
+iteration: 115000, loss: 0.9481385946273804
+iteration: 115050, loss: 1.4606274366378784
+iteration: 115100, loss: 1.2059425115585327
+iteration: 115150, loss: 1.3860957622528076
+iteration: 115200, loss: 1.6370564699172974
+iteration: 115250, loss: 1.1947710514068604
+iteration: 115300, loss: 1.814598560333252
+iteration: 115350, loss: 0.9781577587127686
+iteration: 115400, loss: 1.8057457208633423
+iteration: 115450, loss: 1.3165957927703857
+iteration: 115500, loss: 1.437382459640503
+iteration: 115550, loss: 1.2776389122009277
+iteration: 115600, loss: 1.1798591613769531
+iteration: 115650, loss: 1.5959519147872925
+iteration: 115700, loss: 1.698991298675537
+iteration: 115750, loss: 1.322417974472046
+iteration: 115800, loss: 1.1748731136322021
+iteration: 115850, loss: 1.1500799655914307
+iteration: 115900, loss: 0.9999843239784241
+iteration: 115950, loss: 1.317702293395996
+iteration: 116000, loss: 1.2744088172912598
+iteration: 116050, loss: 1.4369373321533203
+iteration: 116100, loss: 1.432973027229309
+iteration: 116150, loss: 1.8040257692337036
+iteration: 116200, loss: 1.695859670639038
+epoch 87, loss: 1.379343648755336
+epoch 88
+iteration: 116250, loss: 1.3656469583511353
+iteration: 116300, loss: 1.193243384361267
+iteration: 116350, loss: 1.5814385414123535
+iteration: 116400, loss: 1.2069876194000244
+iteration: 116450, loss: 1.0759681463241577
+iteration: 116500, loss: 1.109251618385315
+iteration: 116550, loss: 1.1710530519485474
+iteration: 116600, loss: 1.526506781578064
+iteration: 116650, loss: 1.6188418865203857
+iteration: 116700, loss: 1.1368401050567627
+iteration: 116750, loss: 1.189589262008667
+iteration: 116800, loss: 1.3048793077468872
+iteration: 116850, loss: 1.2925316095352173
+iteration: 116900, loss: 1.4635838270187378
+iteration: 116950, loss: 0.9367262125015259
+iteration: 117000, loss: 1.3554565906524658
+iteration: 117050, loss: 1.5411646366119385
+iteration: 117100, loss: 1.0509037971496582
+iteration: 117150, loss: 2.3755509853363037
+iteration: 117200, loss: 1.4825178384780884
+iteration: 117250, loss: 1.4355131387710571
+iteration: 117300, loss: 1.3727672100067139
+iteration: 117350, loss: 1.3650239706039429
+iteration: 117400, loss: 1.2898691892623901
+iteration: 117450, loss: 1.3659651279449463
+iteration: 117500, loss: 1.2431139945983887
+iteration: 117550, loss: 1.1591979265213013
+epoch 88, loss: 1.3787215166985143
+epoch 89
+iteration: 117600, loss: 1.5228862762451172
+iteration: 117650, loss: 1.2248129844665527
+iteration: 117700, loss: 1.6350326538085938
+iteration: 117750, loss: 1.3125534057617188
+iteration: 117800, loss: 1.8414446115493774
+iteration: 117850, loss: 1.3748018741607666
+iteration: 117900, loss: 1.2653045654296875
+iteration: 117950, loss: 1.365206003189087
+iteration: 118000, loss: 1.507487416267395
+iteration: 118050, loss: 1.146243691444397
+iteration: 118100, loss: 1.48367440700531
+iteration: 118150, loss: 1.8293817043304443
+iteration: 118200, loss: 1.1777770519256592
+iteration: 118250, loss: 1.474692702293396
+iteration: 118300, loss: 1.3437981605529785
+iteration: 118350, loss: 1.0919170379638672
+iteration: 118400, loss: 1.2077888250350952
+iteration: 118450, loss: 1.9631874561309814
+iteration: 118500, loss: 1.2569042444229126
+iteration: 118550, loss: 1.8031446933746338
+iteration: 118600, loss: 1.3561419248580933
+iteration: 118650, loss: 1.409881353378296
+iteration: 118700, loss: 1.0818743705749512
+iteration: 118750, loss: 1.6056358814239502
+iteration: 118800, loss: 1.1304931640625
+iteration: 118850, loss: 1.4823589324951172
+epoch 89, loss: 1.376861436612897
+epoch 90
+iteration: 118900, loss: 1.342812418937683
+iteration: 118950, loss: 1.5238779783248901
+iteration: 119000, loss: 0.8988195657730103
+iteration: 119050, loss: 1.193717360496521
+iteration: 119100, loss: 1.4636967182159424
+iteration: 119150, loss: 1.313618540763855
+iteration: 119200, loss: 1.6666054725646973
+iteration: 119250, loss: 0.9665101170539856
+iteration: 119300, loss: 1.3531501293182373
+iteration: 119350, loss: 1.2400096654891968
+iteration: 119400, loss: 1.7423015832901
+iteration: 119450, loss: 1.010015606880188
+iteration: 119500, loss: 1.3674414157867432
+iteration: 119550, loss: 1.7311300039291382
+iteration: 119600, loss: 1.0315756797790527
+iteration: 119650, loss: 1.0174875259399414
+iteration: 119700, loss: 1.4073320627212524
+iteration: 119750, loss: 1.5701146125793457
+iteration: 119800, loss: 1.1561946868896484
+iteration: 119850, loss: 1.493367075920105
+iteration: 119900, loss: 1.1525412797927856
+iteration: 119950, loss: 1.1931114196777344
+iteration: 120000, loss: 1.125001311302185
+iteration: 120050, loss: 1.518291711807251
+iteration: 120100, loss: 1.2874380350112915
+iteration: 120150, loss: 1.3547428846359253
+iteration: 120200, loss: 1.457738995552063
+epoch 90, loss: 1.3768422343309126
+epoch 91
+iteration: 120250, loss: 1.019579529762268
+iteration: 120300, loss: 1.0951383113861084
+iteration: 120350, loss: 1.3899892568588257
+iteration: 120400, loss: 1.40447199344635
+iteration: 120450, loss: 1.0058917999267578
+iteration: 120500, loss: 1.231829047203064
+iteration: 120550, loss: 1.0600202083587646
+iteration: 120600, loss: 1.4048107862472534
+iteration: 120650, loss: 1.4872143268585205
+iteration: 120700, loss: 1.9604065418243408
+iteration: 120750, loss: 1.0224418640136719
+iteration: 120800, loss: 1.0184619426727295
+iteration: 120850, loss: 1.1522295475006104
+iteration: 120900, loss: 1.1691958904266357
+iteration: 120950, loss: 1.695915937423706
+iteration: 121000, loss: 1.4030063152313232
+iteration: 121050, loss: 1.0953621864318848
+iteration: 121100, loss: 1.1150412559509277
+iteration: 121150, loss: 1.6024765968322754
+iteration: 121200, loss: 1.2181508541107178
+iteration: 121250, loss: 1.483911395072937
+iteration: 121300, loss: 1.3689608573913574
+iteration: 121350, loss: 1.5547362565994263
+iteration: 121400, loss: 1.8273848295211792
+iteration: 121450, loss: 1.1538411378860474
+iteration: 121500, loss: 1.320970892906189
+epoch 91, loss: 1.3628105073800714
+epoch 92
+iteration: 121550, loss: 1.357607364654541
+iteration: 121600, loss: 1.2365115880966187
+iteration: 121650, loss: 1.2632696628570557
+iteration: 121700, loss: 1.6140379905700684
+iteration: 121750, loss: 1.4060118198394775
+iteration: 121800, loss: 1.383742332458496
+iteration: 121850, loss: 1.5056533813476562
+iteration: 121900, loss: 1.9702790975570679
+iteration: 121950, loss: 0.9550069570541382
+iteration: 122000, loss: 1.0773595571517944
+iteration: 122050, loss: 1.2280008792877197
+iteration: 122100, loss: 1.408966302871704
+iteration: 122150, loss: 1.3250668048858643
+iteration: 122200, loss: 1.4348030090332031
+iteration: 122250, loss: 2.050886869430542
+iteration: 122300, loss: 1.6393580436706543
+iteration: 122350, loss: 1.4974887371063232
+iteration: 122400, loss: 1.1117169857025146
+iteration: 122450, loss: 1.2926485538482666
+iteration: 122500, loss: 1.4900054931640625
+iteration: 122550, loss: 0.9582762718200684
+iteration: 122600, loss: 1.4827923774719238
+iteration: 122650, loss: 1.2155112028121948
+iteration: 122700, loss: 1.6826242208480835
+iteration: 122750, loss: 1.1480371952056885
+iteration: 122800, loss: 1.5439612865447998
+iteration: 122850, loss: 1.5543605089187622
+epoch 92, loss: 1.3598918274200065
+epoch 93
+iteration: 122900, loss: 1.2721117734909058
+iteration: 122950, loss: 0.9325920343399048
+iteration: 123000, loss: 1.6519273519515991
+iteration: 123050, loss: 1.2360808849334717
+iteration: 123100, loss: 1.151764154434204
+iteration: 123150, loss: 1.1403582096099854
+iteration: 123200, loss: 1.2202421426773071
+iteration: 123250, loss: 1.5665202140808105
+iteration: 123300, loss: 1.760680913925171
+iteration: 123350, loss: 1.4464231729507446
+iteration: 123400, loss: 1.3368356227874756
+iteration: 123450, loss: 1.168389916419983
+iteration: 123500, loss: 1.4209153652191162
+iteration: 123550, loss: 1.4959919452667236
+iteration: 123600, loss: 1.1849679946899414
+iteration: 123650, loss: 1.3424286842346191
+iteration: 123700, loss: 1.7119381427764893
+iteration: 123750, loss: 1.6067155599594116
+iteration: 123800, loss: 1.1872345209121704
+iteration: 123850, loss: 1.4878312349319458
+iteration: 123900, loss: 1.5993983745574951
+iteration: 123950, loss: 1.1740041971206665
+iteration: 124000, loss: 1.17528235912323
+iteration: 124050, loss: 1.4843114614486694
+iteration: 124100, loss: 1.4369511604309082
+iteration: 124150, loss: 1.5728800296783447
+epoch 93, loss: 1.3627088933816582
+epoch 94
+iteration: 124200, loss: 1.202746868133545
+iteration: 124250, loss: 1.8213146924972534
+iteration: 124300, loss: 0.9336437582969666
+iteration: 124350, loss: 1.2776941061019897
+iteration: 124400, loss: 1.2229992151260376
+iteration: 124450, loss: 1.3411412239074707
+iteration: 124500, loss: 0.9676135778427124
+iteration: 124550, loss: 1.4614754915237427
+iteration: 124600, loss: 1.0694448947906494
+iteration: 124650, loss: 1.6524968147277832
+iteration: 124700, loss: 1.0910407304763794
+iteration: 124750, loss: 1.3328380584716797
+iteration: 124800, loss: 1.5576635599136353
+iteration: 124850, loss: 0.70189368724823
+iteration: 124900, loss: 2.0068180561065674
+iteration: 124950, loss: 1.2064478397369385
+iteration: 125000, loss: 1.4498506784439087
+iteration: 125050, loss: 1.5735161304473877
+iteration: 125100, loss: 1.843142032623291
+iteration: 125150, loss: 1.1469037532806396
+iteration: 125200, loss: 1.4679003953933716
+iteration: 125250, loss: 1.4869221448898315
+iteration: 125300, loss: 1.141571044921875
+iteration: 125350, loss: 1.193139672279358
+iteration: 125400, loss: 1.6972229480743408
+iteration: 125450, loss: 1.750098705291748
+epoch 94, loss: 1.360188286374398
+epoch 95
+iteration: 125500, loss: 1.3848570585250854
+iteration: 125550, loss: 1.4018573760986328
+iteration: 125600, loss: 1.2702006101608276
+iteration: 125650, loss: 1.330742359161377
+iteration: 125700, loss: 1.2921932935714722
+iteration: 125750, loss: 1.2614705562591553
+iteration: 125800, loss: 1.3390955924987793
+iteration: 125850, loss: 1.3934301137924194
+iteration: 125900, loss: 1.201288104057312
+iteration: 125950, loss: 1.5753252506256104
+iteration: 126000, loss: 1.321275234222412
+iteration: 126050, loss: 1.2874512672424316
+iteration: 126100, loss: 1.2373303174972534
+iteration: 126150, loss: 1.6024352312088013
+iteration: 126200, loss: 1.2721027135849
+iteration: 126250, loss: 1.3452129364013672
+iteration: 126300, loss: 1.461197853088379
+iteration: 126350, loss: 1.24660325050354
+iteration: 126400, loss: 1.2032829523086548
+iteration: 126450, loss: 1.288470983505249
+iteration: 126500, loss: 1.4016002416610718
+iteration: 126550, loss: 1.046236276626587
+iteration: 126600, loss: 1.3544793128967285
+iteration: 126650, loss: 1.1917612552642822
+iteration: 126700, loss: 1.2453584671020508
+iteration: 126750, loss: 1.6693838834762573
+iteration: 126800, loss: 0.971721351146698
+epoch 95, loss: 1.3663316396913556
+epoch 96
+iteration: 126850, loss: 1.4758741855621338
+iteration: 126900, loss: 1.3031048774719238
+iteration: 126950, loss: 1.150846242904663
+iteration: 127000, loss: 1.322838544845581
+iteration: 127050, loss: 1.4713547229766846
+iteration: 127100, loss: 1.3728152513504028
+iteration: 127150, loss: 1.3895677328109741
+iteration: 127200, loss: 1.0528587102890015
+iteration: 127250, loss: 1.2761775255203247
+iteration: 127300, loss: 1.3957340717315674
+iteration: 127350, loss: 1.21953547000885
+iteration: 127400, loss: 1.271119236946106
+iteration: 127450, loss: 1.7993227243423462
+iteration: 127500, loss: 1.1203173398971558
+iteration: 127550, loss: 1.7179417610168457
+iteration: 127600, loss: 1.313325047492981
+iteration: 127650, loss: 1.131956696510315
+iteration: 127700, loss: 1.0108108520507812
+iteration: 127750, loss: 1.8169585466384888
+iteration: 127800, loss: 1.4242581129074097
+iteration: 127850, loss: 1.5002442598342896
+iteration: 127900, loss: 1.5778120756149292
+iteration: 127950, loss: 1.4885907173156738
+iteration: 128000, loss: 1.2968882322311401
+iteration: 128050, loss: 1.7525885105133057
+iteration: 128100, loss: 1.3368979692459106
+epoch 96, loss: 1.362265455621306
+epoch 97
+iteration: 128150, loss: 1.9008952379226685
+iteration: 128200, loss: 1.4174435138702393
+iteration: 128250, loss: 0.9689597487449646
+iteration: 128300, loss: 1.443480134010315
+iteration: 128350, loss: 0.826228678226471
+iteration: 128400, loss: 1.3161171674728394
+iteration: 128450, loss: 1.1012132167816162
+iteration: 128500, loss: 1.361528992652893
+iteration: 128550, loss: 1.456977367401123
+iteration: 128600, loss: 1.3239425420761108
+iteration: 128650, loss: 1.4658408164978027
+iteration: 128700, loss: 1.5766762495040894
+iteration: 128750, loss: 1.1511168479919434
+iteration: 128800, loss: 1.1897718906402588
+iteration: 128850, loss: 1.5971951484680176
+iteration: 128900, loss: 1.3242008686065674
+iteration: 128950, loss: 1.2738456726074219
+iteration: 129000, loss: 1.6044001579284668
+iteration: 129050, loss: 1.4104349613189697
+iteration: 129100, loss: 1.0130805969238281
+iteration: 129150, loss: 0.9149101972579956
+iteration: 129200, loss: 1.2488857507705688
+iteration: 129250, loss: 1.323814034461975
+iteration: 129300, loss: 1.0445345640182495
+iteration: 129350, loss: 1.6834886074066162
+iteration: 129400, loss: 1.5540893077850342
+iteration: 129450, loss: 1.279487133026123
+epoch 97, loss: 1.358131962625509
+epoch 98
+iteration: 129500, loss: 1.1297364234924316
+iteration: 129550, loss: 1.1775953769683838
+iteration: 129600, loss: 1.5028510093688965
+iteration: 129650, loss: 1.2474180459976196
+iteration: 129700, loss: 1.2013036012649536
+iteration: 129750, loss: 1.717252492904663
+iteration: 129800, loss: 1.1369236707687378
+iteration: 129850, loss: 1.3412092924118042
+iteration: 129900, loss: 1.311956763267517
+iteration: 129950, loss: 1.0928751230239868
+iteration: 130000, loss: 1.6533915996551514
+iteration: 130050, loss: 1.329421043395996
+iteration: 130100, loss: 1.9940000772476196
+iteration: 130150, loss: 1.0458011627197266
+iteration: 130200, loss: 1.7849440574645996
+iteration: 130250, loss: 2.4688165187835693
+iteration: 130300, loss: 1.7758500576019287
+iteration: 130350, loss: 1.3475738763809204
+iteration: 130400, loss: 1.2579779624938965
+iteration: 130450, loss: 1.6165755987167358
+iteration: 130500, loss: 0.9263783097267151
+iteration: 130550, loss: 1.6534398794174194
+iteration: 130600, loss: 1.58671236038208
+iteration: 130650, loss: 1.0575342178344727
+iteration: 130700, loss: 1.4119538068771362
+iteration: 130750, loss: 1.7127885818481445
+epoch 98, loss: 1.3537269174996251
+epoch 99
+iteration: 130800, loss: 1.3219773769378662
+iteration: 130850, loss: 1.2664672136306763
+iteration: 130900, loss: 1.2903622388839722
+iteration: 130950, loss: 1.313917636871338
+iteration: 131000, loss: 1.342516303062439
+iteration: 131050, loss: 1.1994825601577759
+iteration: 131100, loss: 1.4583395719528198
+iteration: 131150, loss: 1.3456411361694336
+iteration: 131200, loss: 1.3771637678146362
+iteration: 131250, loss: 1.0648624897003174
+iteration: 131300, loss: 1.1043570041656494
+iteration: 131350, loss: 1.2370661497116089
+iteration: 131400, loss: 0.9291868805885315
+iteration: 131450, loss: 1.396533727645874
+iteration: 131500, loss: 1.0878196954727173
+iteration: 131550, loss: 1.3150535821914673
+iteration: 131600, loss: 1.4320446252822876
+iteration: 131650, loss: 1.147603988647461
+iteration: 131700, loss: 1.0963637828826904
+iteration: 131750, loss: 1.3578287363052368
+iteration: 131800, loss: 1.2143676280975342
+iteration: 131850, loss: 1.244615077972412
+iteration: 131900, loss: 1.7564598321914673
+iteration: 131950, loss: 0.9977920651435852
+iteration: 132000, loss: 1.4746228456497192
+iteration: 132050, loss: 1.494763970375061
+iteration: 132100, loss: 1.167592167854309
+epoch 99, loss: 1.3551090108299435
+{'accuracy': 0.5451274053906195, 'class accuracy': 0.28788017207544336, 'mean iu': 0.18419140273097856, 'fwav accuracy': 0.3878657741212003}
+{'accuracy': 0.49759063720500074, 'class accuracy': 0.1977381136280643, 'mean iu': 0.12928368822376243, 'fwav accuracy': 0.34554551611330225}

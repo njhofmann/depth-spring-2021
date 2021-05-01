@@ -75,7 +75,6 @@ class AlexNet(nn.Module):
         # )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        # TODO add depth into forward
         x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
         x = mu.forward_conv(x, depth, self.conv1, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu1(x)
@@ -115,8 +114,7 @@ def alexnet(pretrained: bool = False, progress: bool = True, in_channels: int = 
         depth_convs = (False, False, False, True, True)
     else:
         raise ValueError(f'{depth_conv_option} is not a supported option')
-    model = AlexNet(in_channels=in_channels, depth_convs=depth_convs, depth_conv_alpha=depth_conv_alpha,
-                    **kwargs)
+    model = AlexNet(in_channels=in_channels, depth_convs=depth_convs, depth_conv_alpha=depth_conv_alpha, **kwargs)
     if pretrained:
         state_dict = load_state_dict_from_url(model_urls['alexnet'],
                                               progress=progress)

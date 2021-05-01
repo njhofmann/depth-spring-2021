@@ -36,13 +36,12 @@ def init_backbone(model: str, channel_cnt: int, depth_conv_alpha: float,
     #     base_model = m.densenet(input_channels=channel_cnt, depth_conv_config=depth_conv_config)
     #     return_layers = {'features': 'out'}
     elif model == 'alexnet':
-        backbone = m.alexnet(depth_conv_option=depth_conv_option, depth_conv_alpha=depth_conv_alpha)
+        backbone = m.alexnet(in_channels=channel_cnt,
+                             depth_conv_option=depth_conv_option,
+                             depth_conv_alpha=depth_conv_alpha)
         return backbone, 256
     else:
         raise ValueError(f'model {model} is an unsupported model')
-
-    backbone = su.IntermediateLayerGetter(base_model, return_layers)
-    return backbone, in_channel_cnt
 
 
 def init_model(num_of_classes: int, num_of_channels: int, model: str, seg_or_box: bool, device,

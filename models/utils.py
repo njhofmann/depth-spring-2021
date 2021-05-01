@@ -27,6 +27,6 @@ def forward_conv(x: t.Tensor, depth: Optional[t.Tensor], conv: Union[dc.DepthCon
     while has_depth_conv and depth.shape[-2:] != x.shape[-2:]:
         depth = depth_avger(depth)
 
-    if has_depth_conv and depth is not None:
+    if isinstance(conv, dc.DepthConv) and has_depth_conv and depth is not None:
         return conv(x, depth)
     return conv(x)
