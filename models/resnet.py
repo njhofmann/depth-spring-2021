@@ -275,7 +275,7 @@ class ResNet(nn.Module):
 
     def _forward_impl(self, x: Tensor, depth: Optional[Tensor] = None) -> Tensor:
         # See note [TorchScript super()]
-        x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
+        #x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -286,10 +286,6 @@ class ResNet(nn.Module):
         x, _ = self.layer2((x, depth))
         x, _ = self.layer3((x, depth))
         x, _ = self.layer4((x, depth))
-
-        # x = self.avgpool(x)
-        # x = torch.flatten(x, 1)
-        # x = self.fc(x)
 
         return {'out': x}
 

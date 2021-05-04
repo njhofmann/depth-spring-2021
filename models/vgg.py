@@ -37,30 +37,17 @@ class VGG(nn.Module):
         self.has_depth_conv = has_depth_conv
         self.depth_down_sampler = nn.AvgPool2d(2, stride=2) if self.has_depth_conv else None
         self.features = features
-        # self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
-        # self.classifier = nn.Sequential(
-        #     nn.Linear(512 * 7 * 7, 4096),
-        #     nn.ReLU(True),
-        #     nn.Dropout(),
-        #     nn.Linear(4096, 4096),
-        #     nn.ReLU(True),
-        #     nn.Dropout(),
-        #     nn.Linear(4096, num_classes),
-        # )
+
         if init_weights:
             self._initialize_weights()
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
+    def forward(self, x: torch.Tensor, depth: Optional[torch.Tensor] = None) -> torch.Tensor:
+        #x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
         for layer in self.features.children():
             if isinstance(layer, dc.DepthConv):
                 x = mu.forward_conv(x, depth, layer, self.has_depth_conv, self.depth_down_sampler)
             else:
                 x = layer(x)
-        # x = self.features(x)
-        # x = self.avgpool(x)
-        # x = torch.flatten(x, 1)
-        # x = self.classifier(x)
         return {'out': x} # TODO redo me
 
     def _initialize_weights(self) -> None:

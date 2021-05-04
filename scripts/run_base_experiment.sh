@@ -11,4 +11,3 @@ do
   echo running $save_name on gpu $1
   python -m src.main -m $model -c $channels --$mode -e 100 -bs 4 -mn $save_name > outputs/${save_name}.txt
 done
-

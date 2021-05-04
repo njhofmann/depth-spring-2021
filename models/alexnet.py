@@ -74,8 +74,8 @@ class AlexNet(nn.Module):
         #     nn.Linear(4096, num_classes),
         # )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
+    def forward(self, x: torch.Tensor, depth: Optional[torch.Tensor] = None) -> torch.Tensor:
+        #x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
         x = mu.forward_conv(x, depth, self.conv1, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu1(x)
         x = self.max_pool_2d_1(x)

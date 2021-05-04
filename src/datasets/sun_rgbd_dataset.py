@@ -25,7 +25,8 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
     CLASS_COUNT = 38
 
     def __init__(self, dirc: pl.Path, semantic_or_box: bool, rgb: bool, depth: bool, augment: bool = True,
-                 bbox_cls_threshold: int = 300, bbox_classes: Optional[List[str]] = None) -> None:
+                 sep_rgbd: bool = False, bbox_cls_threshold: int = 300, bbox_classes: Optional[List[str]] = None) \
+            -> None:
         # TODO explain me
 
         if not (rgb or depth):
@@ -36,6 +37,9 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
         # load semantic segmentation masks or 2D bounding boxes
         self.semantic_or_box = semantic_or_box
+
+        # if both rgb and depth data, keep as separate inputs or a single input
+        self.sep_rgbd = sep_rgbd
 
         # to augment the raw data or not
         self.augment = augment
@@ -170,6 +174,8 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
             label = label[0]
 
         if self.semantic_or_box:
+            if self.sep_rgbd:
+                return *self._sep_rgbd_data(img), label
             return img, label
 
         bboxes = t.Tensor(label[0])
@@ -180,6 +186,12 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
     def __len__(self):
         return len(self.dircs if self.semantic_or_box else self.bbox_indces)
+
+    def _sep_rgbd_data(self, rgbd: t.Tensor) -> Tuple[t.Tensor, t.Tensor]:
+        depth = rgbd[:, 3, :, :]
+        depth = depth[:, None, :, :]  # [batch_sz, h, w] --> [batch_sz, dummy_dim, h, w]
+        rgb = rgbd[:, 0:3, :, :]
+        return rgb, depth
 
     @property
     def channel_count(self) -> int:
@@ -252,8 +264,9 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
 
 class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 
-    def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True, augment: bool = True):
-        super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth, augment)
+    def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True, augment: bool = True,
+                 sep_rgbd: bool = False) -> None:
+        super().__init__(p.SUN_RGBD_TRAIN_DIRC, semantic_or_box, rgb, depth, augment, sep_rgbd=sep_rgbd)
         self.cropper = tvt.RandomCrop(INPUT_SHAPE)
         self.jitter = tvt.ColorJitter()
 
@@ -323,9 +336,10 @@ class SUNRGBDTrainDataset(GenericSUNRGBDDataset):
 
 class SUNRGBDTestDataset(GenericSUNRGBDDataset):
 
-    def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True,
+    def __init__(self, semantic_or_box: bool, rgb: bool = True, depth: bool = True, sep_rgbd: bool = False,
                  bbox_classes: Optional[List[str]] = None) -> None:
-        super().__init__(p.SUN_RGBD_TEST_DIRC, semantic_or_box, rgb, depth, bbox_classes=bbox_classes)
+        super().__init__(p.SUN_RGBD_TEST_DIRC, semantic_or_box, rgb, depth, sep_rgbd=sep_rgbd,
+                         bbox_classes=bbox_classes)
 
     def _crop_img(self, img, label):
         cropper_params = cc.center_crop(img, list(INPUT_SHAPE))
@@ -343,10 +357,11 @@ class SUNRGBDTestDataset(GenericSUNRGBDDataset):
         return img, label
 
 
-def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_depth: bool, augment: bool) \
-        -> Tuple[SUNRGBDTrainDataset, SUNRGBDTestDataset]:
-    train = SUNRGBDTrainDataset(segmentation_or_box, include_rgb, include_depth, augment)
-    test = SUNRGBDTestDataset(segmentation_or_box, include_rgb, include_depth, bbox_classes=train.bbox_classes)
+def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_depth: bool, augment: bool,
+                          sep_rgbd: bool) -> Tuple[SUNRGBDTrainDataset, SUNRGBDTestDataset]:
+    train = SUNRGBDTrainDataset(segmentation_or_box, include_rgb, include_depth, augment, sep_rgbd=sep_rgbd)
+    test = SUNRGBDTestDataset(segmentation_or_box, include_rgb, include_depth, sep_rgbd=sep_rgbd,
+                              bbox_classes=train.bbox_classes)
 
     if not segmentation_or_box and train.bbox_classes != test.bbox_classes:
         raise RuntimeError('train and test classes have different bbox classes')

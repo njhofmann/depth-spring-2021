@@ -19,6 +19,7 @@
    1. additional datasets
    1. depth aware max pooling
    1. add densenet
+1. add std devs to measurements   
 1. existing work
    1. Read me
       1. set-up
@@ -26,7 +27,6 @@
    1. densenet setup
    1. additional dataset
    1. additional depth conv congif   
-   1. try without batch norm?
    1. redo how depth data is inputted and retrieved when using depth convs
    1. redo depth conv operation
 

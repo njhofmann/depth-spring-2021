@@ -83,10 +83,16 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
         for i, batch in enumerate(train_data):
             # zero the parameter gradients, forward prop + backward prop + optimizer
             if seg_or_bbox:
-                channels, seg_mask = batch
+                depth_channels = None
+                if len(batch) == 2:
+                    channels, seg_mask = batch
+                else:
+                    channels, depth_channels, seg_mask = batch
+                    depth_channels = depth_channels.to(device)
                 channels, seg_mask = channels.to(device), seg_mask.to(device)
+
                 optimizer.zero_grad()
-                outputs = model(channels)['out']
+                outputs = model(channels, depth_channels)['out']
 
                 loss = loss_func(outputs, seg_mask)
                 loss.backward()
@@ -181,10 +187,12 @@ if __name__ == '__main__':
     batch_size = args.batch_size
     worker_count = 4 * t.cuda.device_count()
     depth_conv_option = args.depth_conv_option
+    sep_rgbd = depth_conv_option is not None
     train_dataset, test_dataset = d.load_sun_rgbd_dataset(segmentation_or_box=seg_or_bbox,
                                                           include_rgb=rgb,
                                                           include_depth=depth,
-                                                          augment=args.no_augment)
+                                                          augment=args.no_augment,
+                                                          sep_rgbd=sep_rgbd)
     num_of_classes = train_dataset.CLASS_COUNT
     train_data, test_data = init_data_loaders(train_dataset, test_dataset, batch_size, worker_count, seg_or_bbox)
 
