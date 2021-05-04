@@ -48,50 +48,21 @@ class AlexNet(nn.Module):
         self.max_pool_2d_3 = nn.MaxPool2d(kernel_size=3, stride=2)
         self.depth_down_sampler = nn.AvgPool2d(3, stride=2) if self.has_depth_conv else None
 
-        # self.features = nn.Sequential(
-        #     self.conv1,
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=3, stride=2),
-        #     self.conv2,
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=3, stride=2),
-        #     self.conv3,
-        #     nn.ReLU(inplace=True),
-        #     self.conv4,
-        #     nn.ReLU(inplace=True),
-        #     self.conv5,
-        #     nn.ReLU(inplace=True),
-        #     nn.MaxPool2d(kernel_size=3, stride=2),
-        # )
-        # self.avgpool = nn.AdaptiveAvgPool2d((6, 6))
-        # self.classifier = nn.Sequential(
-        #     nn.Dropout(),
-        #     nn.Linear(256 * 6 * 6, 4096),
-        #     nn.ReLU(inplace=True),
-        #     nn.Dropout(),
-        #     nn.Linear(4096, 4096),
-        #     nn.ReLU(inplace=True),
-        #     nn.Linear(4096, num_classes),
-        # )
-
     def forward(self, x: torch.Tensor, depth: Optional[torch.Tensor] = None) -> torch.Tensor:
         #x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
-        x = mu.forward_conv(x, depth, self.conv1, self.has_depth_conv, self.depth_down_sampler)
+        x, depth = mu.forward_conv(x, depth, self.conv1, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu1(x)
         x = self.max_pool_2d_1(x)
-        x = mu.forward_conv(x, depth, self.conv2, self.has_depth_conv, self.depth_down_sampler)
+        x, depth = mu.forward_conv(x, depth, self.conv2, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu2(x)
         x = self.max_pool_2d_2(x)
-        x = mu.forward_conv(x, depth, self.conv3, self.has_depth_conv, self.depth_down_sampler)
+        x, depth = mu.forward_conv(x, depth, self.conv3, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu3(x)
-        x = mu.forward_conv(x, depth, self.conv4, self.has_depth_conv, self.depth_down_sampler)
+        x, depth = mu.forward_conv(x, depth, self.conv4, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu4(x)
-        x = mu.forward_conv(x, depth, self.conv5, self.has_depth_conv, self.depth_down_sampler)
+        x, depth = mu.forward_conv(x, depth, self.conv5, self.has_depth_conv, self.depth_down_sampler)
         x = self.relu5(x)
         x = self.max_pool_2d_3(x)
-        # x = self.avgpool(x)
-        # x = torch.flatten(x, 1)
-        # x = self.classifier(x)
         return {'out': x}  # change me
 
 

@@ -87,6 +87,7 @@ def train_and_eval(model: nn.Module, train_data: td.DataLoader, test_data: td.Da
                 if len(batch) == 2:
                     channels, seg_mask = batch
                 else:
+                    print(5)
                     channels, depth_channels, seg_mask = batch
                     depth_channels = depth_channels.to(device)
                 channels, seg_mask = channels.to(device), seg_mask.to(device)

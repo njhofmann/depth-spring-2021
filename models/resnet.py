@@ -35,7 +35,7 @@ def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, d
 
 
 def conv1x1(in_planes: int, out_planes: int, stride: int = 1, depth_conv_alpha: float = 8.3,
-            depth_conv: bool = False,) -> Union[dc.DepthConv, nn.Conv2d]:
+            depth_conv: bool = False, ) -> Union[dc.DepthConv, nn.Conv2d]:
     """1x1 convolution"""
     if depth_conv:
         return dc.DepthConv(in_planes, out_planes, alpha=depth_conv_alpha, kernel_size=1, stride=stride, bias=False)
@@ -145,15 +145,15 @@ class Bottleneck(nn.Module):
         x, depth = x
         identity = x
 
-        out = mu.forward_conv(x, depth, self.conv1, self.depth_conv, self.conv1_depth_avger)
+        out, _ = mu.forward_conv(x, depth, self.conv1, self.depth_conv, self.conv1_depth_avger)
         out = self.bn1(out)
         out = self.relu(out)
 
-        out = mu.forward_conv(out, depth, self.conv2, self.depth_conv, self.conv2_depth_avger)
+        out, _ = mu.forward_conv(out, depth, self.conv2, self.depth_conv, self.conv2_depth_avger)
         out = self.bn2(out)
         out = self.relu(out)
 
-        out = mu.forward_conv(out, depth, self.conv3, self.depth_conv, self.conv3_depth_avger)
+        out, _ = mu.forward_conv(out, depth, self.conv3, self.depth_conv, self.conv3_depth_avger)
         out = self.bn3(out)
 
         if self.downsample is not None:
@@ -195,13 +195,17 @@ class ResNet(nn.Module):
                              "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
-        # TODO conv2d here
-        self.conv1 = nn.Conv2d(input_channels, self.inplanes, kernel_size=7, stride=2, padding=3,
-                               bias=False)
+
+        layers, self.has_depth_conv = self._parse_depth_conv_options(layers)
+        # treat first conv layer as apart of first bottleneck
+        if layers[0][1]:
+            self.conv1 = dc.DepthConv(input_channels, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
+        else:
+            self.conv1 = nn.Conv2d(input_channels, self.inplanes, kernel_size=7, stride=2, padding=3, bias=False)
+
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        layers, self.has_depth_conv = self._parse_depth_conv_options(layers)
         self.layer1 = self._make_layer(block, 64, layers[0][0], depth_conv=layers[0][1])
         self.layer2 = self._make_layer(block, 128, layers[1][0], stride=2,
                                        dilate=replace_stride_with_dilation[0], depth_conv=layers[1][1],
@@ -256,7 +260,7 @@ class ResNet(nn.Module):
             stride = 1
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
-                conv1x1(self.inplanes, planes * block.expansion, stride), # TODO make this depth conv?
+                conv1x1(self.inplanes, planes * block.expansion, stride),  # TODO make this depth conv?
                 norm_layer(planes * block.expansion),
             )
 
@@ -275,7 +279,6 @@ class ResNet(nn.Module):
 
     def _forward_impl(self, x: Tensor, depth: Optional[Tensor] = None) -> Tensor:
         # See note [TorchScript super()]
-        #x, depth = mu.sep_rgbd_data(x, self.has_depth_conv)
 
         x = self.conv1(x)
         x = self.bn1(x)
@@ -311,30 +314,6 @@ def _resnet(
     return model
 
 
-def resnet18(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""ResNet-18 model from
-    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet('resnet18', BasicBlock, [2, 2, 2, 2], pretrained, progress,
-                   **kwargs)
-
-
-def resnet34(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""ResNet-34 model from
-    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet('resnet34', BasicBlock, [3, 4, 6, 3], pretrained, progress,
-                   **kwargs)
-
-
 def resnet50(pretrained: bool = False, progress: bool = True, depth_conv_alpha: float = 8.3, input_channels: int = 3,
              depth_conv_option: Optional[str] = None, **kwargs: Any) -> ResNet:
     r"""ResNet-50 model from
@@ -356,91 +335,3 @@ def resnet50(pretrained: bool = False, progress: bool = True, depth_conv_alpha: 
         raise ValueError(f'{depth_conv_option} is not a supported option')
     return _resnet('resnet50', Bottleneck, layers, pretrained, progress, input_channels, depth_conv_alpha,
                    **kwargs)
-
-
-def resnet101(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""ResNet-101 model from
-    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet('resnet101', Bottleneck, [3, 4, 23, 3], pretrained, progress,
-                   **kwargs)
-
-
-def resnet152(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""ResNet-152 model from
-    `"Deep Residual Learning for Image Recognition" <https://arxiv.org/pdf/1512.03385.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    return _resnet('resnet152', Bottleneck, [3, 8, 36, 3], pretrained, progress,
-                   **kwargs)
-
-
-def resnext50_32x4d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""ResNeXt-50 32x4d model from
-    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    kwargs['groups'] = 32
-    kwargs['width_per_group'] = 4
-    return _resnet('resnext50_32x4d', Bottleneck, [3, 4, 6, 3],
-                   pretrained, progress, **kwargs)
-
-
-def resnext101_32x8d(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""ResNeXt-101 32x8d model from
-    `"Aggregated Residual Transformation for Deep Neural Networks" <https://arxiv.org/pdf/1611.05431.pdf>`_.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    kwargs['groups'] = 32
-    kwargs['width_per_group'] = 8
-    return _resnet('resnext101_32x8d', Bottleneck, [3, 4, 23, 3],
-                   pretrained, progress, **kwargs)
-
-
-def wide_resnet50_2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""Wide ResNet-50-2 model from
-    `"Wide Residual Networks" <https://arxiv.org/pdf/1605.07146.pdf>`_.
-
-    The model is the same as ResNet except for the bottleneck number of channels
-    which is twice larger in every block. The number of channels in outer 1x1
-    convolutions is the same, e.g. last block in ResNet-50 has 2048-512-2048
-    channels, and in Wide ResNet-50-2 has 2048-1024-2048.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    kwargs['width_per_group'] = 64 * 2
-    return _resnet('wide_resnet50_2', Bottleneck, [3, 4, 6, 3],
-                   pretrained, progress, **kwargs)
-
-
-def wide_resnet101_2(pretrained: bool = False, progress: bool = True, **kwargs: Any) -> ResNet:
-    r"""Wide ResNet-101-2 model from
-    `"Wide Residual Networks" <https://arxiv.org/pdf/1605.07146.pdf>`_.
-
-    The model is the same as ResNet except for the bottleneck number of channels
-    which is twice larger in every block. The number of channels in outer 1x1
-    convolutions is the same, e.g. last block in ResNet-50 has 2048-512-2048
-    channels, and in Wide ResNet-50-2 has 2048-1024-2048.
-
-    Args:
-        pretrained (bool): If True, returns a model pre-trained on ImageNet
-        progress (bool): If True, displays a progress bar of the download to stderr
-    """
-    kwargs['width_per_group'] = 64 * 2
-    return _resnet('wide_resnet101_2', Bottleneck, [3, 4, 23, 3],
-                   pretrained, progress, **kwargs)

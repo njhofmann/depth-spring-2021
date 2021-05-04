@@ -44,9 +44,16 @@ def eval_results(hist, return_iu: bool = False):
 
 def eval_seg_model(model: nn.Module, test_data, num_of_classes: int, device):
     results_hist = None
-    for i, (channels, seg_mask) in enumerate(test_data):
+    for i, batch in enumerate(test_data):
+        depth_channel = None
+        if len(batch) == 2:
+            channels, seg_mask = batch
+        else:
+            channels, depth_channel, seg_mask = batch
+            depth_channel = depth_channel.to(device)
         channels, seg_mask = channels.to(device), seg_mask.to(device)
-        pred_seg_mask = t.argmax(t.softmax(model(channels)['out'], dim=1), dim=1)
+
+        pred_seg_mask = t.argmax(t.softmax(model(channels, depth_channel)['out'], dim=1), dim=1)
         results_hist = build_hist(u.cuda_tensor_to_np_arr(seg_mask),
                                   u.cuda_tensor_to_np_arr(pred_seg_mask),
                                   results_hist,

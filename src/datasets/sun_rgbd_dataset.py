@@ -99,7 +99,7 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         return (self._load_semantic_label if semantic else self._load_bounding_boxes)(dirc)
 
     def _load_bounding_box_info(self, dirc: pl.Path) -> np.ndarray:
-        return np.load(dirc.joinpath('bounding_box.npy'), allow_pickle=True)
+        return np.load(str(dirc / 'bounding_box.npy'), allow_pickle=True)
 
     def _load_bounding_boxes(self, dirc: pl.Path) -> Tuple[t.Tensor, t.Tensor]:
         # TODO explain me
@@ -118,29 +118,33 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         return t.as_tensor(bboxes), t.as_tensor(bbox_labels)
 
     def _load_semantic_label(self, dirc: pl.Path) -> t.Tensor:
-        return t.as_tensor(self.tensorer(pi.open(dirc.joinpath('semantic_segs.png'))) * 255, dtype=t.long)
+        return t.as_tensor(self.tensorer(pi.open(dirc / 'semantic_segs.png')) * 255, dtype=t.long)
 
     def _load_rgb(self, dirc: pl.Path) -> t.Tensor:
-        return self.tensorer(np.array(pi.open(dirc.joinpath('rgb.png'))))
+        return self.tensorer(np.array(pi.open(dirc / 'rgb.png')))
 
     def _load_depth(self, dirc: pl.Path) -> t.Tensor:
-        return self.tensorer(np.array(pi.open(dirc.joinpath('depth.png')))).to(t.float) / MAX_DEPTH
+        return self.tensorer(np.array(pi.open(dirc / 'depth.png'))).to(t.float) / MAX_DEPTH
 
     @abc.abstractmethod
     def _apply_augments(self, img, label):
         if not self.normalize:
             return img, label
 
-        normalize = self.depth_normal
         if self.include_rgb and self.include_depth:
-            normalize = self.rgb_and_depth_normal
+            if not self.sep_rgbd:
+                img = self.rgb_and_depth_normal(img)
+            else:
+                img[:3] = self.rgb_normal(img[:3])
         elif self.include_rgb:
-            normalize = self.rgb_normal
-        img = normalize(img)
+            img = self.rgb_normal(img)
+        else:
+            img = self.depth_normal(img)
+
         return img, label
 
     def _get_sample_dirc(self, idx: int) -> pl.Path:
-        # explain me
+        # TODO explain me
         if not self.semantic_or_box:
             idx = self.bbox_indces[idx]
         return self.dircs[idx]
@@ -188,9 +192,9 @@ class GenericSUNRGBDDataset(tud.Dataset, abc.ABC):
         return len(self.dircs if self.semantic_or_box else self.bbox_indces)
 
     def _sep_rgbd_data(self, rgbd: t.Tensor) -> Tuple[t.Tensor, t.Tensor]:
-        depth = rgbd[:, 3, :, :]
-        depth = depth[:, None, :, :]  # [batch_sz, h, w] --> [batch_sz, dummy_dim, h, w]
-        rgb = rgbd[:, 0:3, :, :]
+        depth = rgbd[3, :, :]
+        depth = depth[None, :, :]  # [batch_sz, h, w] --> [batch_sz, dummy_dim, h, w]
+        rgb = rgbd[:3, :, :]
         return rgb, depth
 
     @property
@@ -370,5 +374,6 @@ def load_sun_rgbd_dataset(segmentation_or_box: bool, include_rgb: bool, include_
 
 
 if __name__ == '__main__':
-    a = SUNRGBDTrainDataset(True)
+    a = SUNRGBDTrainDataset(True, sep_rgbd=True)
+    a[0]
     print(a[0][0].shape)

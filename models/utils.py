@@ -22,11 +22,11 @@ def sep_rgbd_data(x: t.Tensor, has_depth_conv: bool) -> Tuple[t.Tensor, Optional
 
 
 def forward_conv(x: t.Tensor, depth: Optional[t.Tensor], conv: Union[dc.DepthConv, nn.Conv2d],
-                  has_depth_conv: bool, depth_avger: nn.AvgPool2d) -> t.Tensor:
+                 has_depth_conv: bool, depth_avger: nn.AvgPool2d) -> Tuple[t.Tensor, Optional[t.Tensor]]:
     # downscale depth until same shape
     while has_depth_conv and depth.shape[-2:] != x.shape[-2:]:
         depth = depth_avger(depth)
 
     if isinstance(conv, dc.DepthConv) and has_depth_conv and depth is not None:
-        return conv(x, depth)
-    return conv(x)
+        return conv(x, depth), depth
+    return conv(x), depth
